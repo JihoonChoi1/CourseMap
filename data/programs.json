@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "degree": {
+    "id": "CS_BS",
+    "name": "컴퓨터공학 학사",
+    "groups": [
+      { "id": "MATH_REQ",    "name": "수학 필수",   "rule": "ALL",    "n": 0, "courses": ["MATH101", "MATH102", "MATH120", "MATH201", "STAT201"] },
+      { "id": "CS_CORE",     "name": "전공 필수",   "rule": "ALL",    "n": 0, "courses": ["CS101", "CS101L", "CS102", "CS201", "CS210", "CS220", "CS301", "CS310"] },
+      { "id": "CS_ELECTIVE", "name": "전공 선택",   "rule": "PICK_N", "n": 2, "courses": ["CS320", "CS330", "CS340", "CS350"] },
+      { "id": "CAPSTONE",    "name": "캡스톤",      "rule": "ALL",    "n": 0, "courses": ["CS490"] }
+    ]
+  },
+  "tracks": [
+    {
+      "id": "AI",
+      "name": "AI/ML 엔지니어",
+      "groups": [
+        { "id": "AI_CORE",     "name": "AI 트랙 필수", "rule": "ALL",    "n": 0, "courses": ["CS360"] },
+        { "id": "AI_ELECTIVE", "name": "AI 트랙 선택", "rule": "PICK_N", "n": 2, "courses": ["CS361", "CS362", "CS363"] }
+      ]
+    },
+    {
+      "id": "SYSTEMS",
+      "name": "시스템 엔지니어",
+      "groups": [
+        { "id": "SYS_CORE",     "name": "시스템 트랙 필수", "rule": "ALL",    "n": 0, "courses": ["CS330"] },
+        { "id": "SYS_ELECTIVE", "name": "시스템 트랙 선택", "rule": "PICK_N", "n": 2, "courses": ["CS410", "CS411", "CS420"] }
+      ]
+    },
+    {
+      "id": "WEB",
+      "name": "웹/백엔드 개발자",
+      "groups": [
+        { "id": "WEB_CORE",     "name": "웹 트랙 필수", "rule": "ALL",    "n": 0, "courses": ["CS320", "CS370", "CS371"] },
+        { "id": "WEB_ELECTIVE", "name": "웹 트랙 선택", "rule": "PICK_N", "n": 1, "courses": ["CS410", "CS420"] }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "seasons": ["SPRING", "FALL"],
+  "courses": [
+    { "id": "MATH101", "title": "미적분학 I",            "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [],                                    "coreqs": [] },
+    { "id": "MATH102", "title": "미적분학 II",           "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [["MATH101"]],                         "coreqs": [] },
+    { "id": "MATH120", "title": "이산수학",              "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [],                                    "coreqs": [] },
+    { "id": "MATH201", "title": "선형대수",              "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [["MATH101"]],                         "coreqs": [["MATH102"]] },
+    { "id": "STAT201", "title": "확률과 통계",           "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [["MATH102"]],                         "coreqs": [] },
+
+    { "id": "CS101",   "title": "프로그래밍 입문",       "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [],                                    "coreqs": [["CS101L"]] },
+    { "id": "CS101L",  "title": "프로그래밍 입문 실습",  "credits": 1, "offered": ["SPRING", "FALL"], "prereqs": [],                                    "coreqs": [["CS101"]] },
+    { "id": "CS102",   "title": "객체지향 프로그래밍",   "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [["CS101"]],                           "coreqs": [] },
+    { "id": "CS201",   "title": "자료구조",              "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [["CS102"], ["MATH120"]],              "coreqs": [] },
+    { "id": "CS210",   "title": "컴퓨터 구조",           "credits": 3, "offered": ["FALL"],           "prereqs": [["CS102"]],                           "coreqs": [] },
+    { "id": "CS220",   "title": "소프트웨어 공학 기초",  "credits": 3, "offered": ["SPRING"],         "prereqs": [["CS102"]],                           "coreqs": [] },
+    { "id": "CS301",   "title": "알고리즘",              "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [["CS201"], ["MATH120"]],              "coreqs": [] },
+    { "id": "CS310",   "title": "운영체제",              "credits": 4, "offered": ["FALL"],           "prereqs": [["CS201"], ["CS210"]],                "coreqs": [] },
+    { "id": "CS320",   "title": "데이터베이스",          "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [["CS201"]],                           "coreqs": [] },
+    { "id": "CS330",   "title": "컴퓨터 네트워크",       "credits": 3, "offered": ["SPRING"],         "prereqs": [["CS210"]],                           "coreqs": [] },
+    { "id": "CS340",   "title": "프로그래밍 언어론",     "credits": 3, "offered": ["SPRING"],         "prereqs": [["CS201"]],                           "coreqs": [] },
+    { "id": "CS350",   "title": "계산 이론",             "credits": 3, "offered": ["FALL"],           "prereqs": [["CS201"], ["MATH120"]],              "coreqs": [] },
+
+    { "id": "CS360",   "title": "머신러닝 개론",         "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [["CS201"], ["MATH201"], ["STAT201"]], "coreqs": [] },
+    { "id": "CS361",   "title": "딥러닝",                "credits": 3, "offered": ["SPRING"],         "prereqs": [["CS360"]],                           "coreqs": [] },
+    { "id": "CS362",   "title": "자연어처리",            "credits": 3, "offered": ["FALL"],           "prereqs": [["CS360"]],                           "coreqs": [] },
+    { "id": "CS363",   "title": "컴퓨터 비전",           "credits": 3, "offered": ["SPRING"],         "prereqs": [["CS360"], ["MATH201"]],              "coreqs": [] },
+
+    { "id": "CS370",   "title": "웹 개발",               "credits": 3, "offered": ["SPRING", "FALL"], "prereqs": [["CS102"]],                           "coreqs": [] },
+    { "id": "CS371",   "title": "백엔드 시스템",         "credits": 3, "offered": ["SPRING"],         "prereqs": [["CS370"], ["CS320", "CS330"]],       "coreqs": [] },
+
+    { "id": "CS410",   "title": "분산 시스템",           "credits": 3, "offered": ["SPRING"],         "prereqs": [["CS310"], ["CS330"]],                "coreqs": [] },
+    { "id": "CS411",   "title": "컴파일러",              "credits": 4, "offered": ["FALL"],           "prereqs": [["CS210"], ["CS340"]],                "coreqs": [] },
+    { "id": "CS420",   "title": "정보 보안",             "credits": 3, "offered": ["FALL"],           "prereqs": [["CS310", "CS330"]],                  "coreqs": [] },
+
+    { "id": "CS490",   "title": "캡스톤 디자인",         "credits": 4, "offered": ["SPRING"],         "prereqs": [["CS301"], ["CS220"]],                "coreqs": [] }
+  ]
+}

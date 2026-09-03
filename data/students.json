@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "students": [
+    {
+      "id": "S1",
+      "name": "신입생 (AI 트랙)",
+      "track": "AI",
+      "completed": [],
+      "start_term": { "year": 2026, "season": "FALL" },
+      "num_terms": 8,
+      "max_credits_per_term": 15
+    },
+    {
+      "id": "S2",
+      "name": "2학년 진입 (시스템 트랙)",
+      "track": "SYSTEMS",
+      "completed": ["MATH101", "MATH102", "MATH120", "CS101", "CS101L", "CS102"],
+      "start_term": { "year": 2027, "season": "FALL" },
+      "num_terms": 5,
+      "max_credits_per_term": 12
+    },
+    {
+      "id": "S3",
+      "name": "파트타임 막학기 (웹 트랙) - 학점 상한으로 불가능",
+      "track": "WEB",
+      "completed": ["MATH101", "MATH102", "MATH120", "MATH201", "STAT201",
+                    "CS101", "CS101L", "CS102", "CS201", "CS210", "CS220", "CS301", "CS310",
+                    "CS320", "CS330"],
+      "start_term": { "year": 2027, "season": "FALL" },
+      "num_terms": 2,
+      "max_credits_per_term": 6
+    },
+    {
+      "id": "S4",
+      "name": "마지막 한 학기 (AI 트랙) - 개설학기 때문에 불가능",
+      "track": "AI",
+      "completed": ["MATH101", "MATH102", "MATH120", "MATH201", "STAT201",
+                    "CS101", "CS101L", "CS102", "CS201", "CS210", "CS220", "CS301",
+                    "CS320", "CS340", "CS360", "CS361", "CS363"],
+      "start_term": { "year": 2028, "season": "SPRING" },
+      "num_terms": 1,
+      "max_credits_per_term": 15
+    }
+  ]
+}
