@@ -1,0 +1,47 @@
+# 로컬 개발/테스트용 MySQL + Redis + S3 호환 스토리지. Django 테스트는 같은 MySQL 서버에 test_coursemap DB를 만들어 쓴다.
+# Redis는 Celery 브로커로만 쓴다 (결과는 MySQL PlanJob 테이블에 저장).
+# s3 (Phase 6): Plan export 대상. MinIO 공식 이미지를 더 이상 받을 수 없어 S3 호환 서버 RustFS를 쓴다.
+#   접속 키는 이 컨테이너 전용 로컬 개발 값이다 (MySQL 비밀번호와 같은 취급). 실제 AWS 키는 여기 두지 않는다.
+#   버킷 생성: .venv/bin/python manage.py ensure_s3_bucket
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: coursemap
+      MYSQL_USER: coursemap
+      MYSQL_PASSWORD: coursemap
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7.4
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  s3:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ACCESS_KEY: "${S3_ACCESS_KEY_ID:-coursemap-dev}"
+      RUSTFS_SECRET_KEY: "${S3_SECRET_ACCESS_KEY:-coursemap-dev-secret}"
+    ports:
+      - "${S3_PORT:-9000}:9000"
+    volumes:
+      - s3-data:/data
+
+volumes:
+  mysql-data:
+  s3-data:
