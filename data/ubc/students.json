@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "students": [
+    {
+      "id": "U1",
+      "name": "신입생 (AI/ML) — 2026W1부터 4년",
+      "track": "AI_ML",
+      "completed": [],
+      "start_term": { "year": 2026, "season": "W1" },
+      "num_terms": 8,
+      "max_credits_per_term": 15
+    },
+    {
+      "id": "U2",
+      "name": "2학년 진입 (시스템) — 1학년 필수 이수",
+      "track": "SYSTEMS",
+      "completed": ["CPSC 110", "CPSC 121", "MATH 100", "MATH 101"],
+      "start_term": { "year": 2027, "season": "W1" },
+      "num_terms": 6,
+      "max_credits_per_term": 15
+    },
+    {
+      "id": "U3",
+      "name": "3학년 진입 (AI/ML) — 선형대수를 MATH 111로 이수",
+      "track": "AI_ML",
+      "completed": ["CPSC 110", "CPSC 121", "CPSC 210", "CPSC 213", "CPSC 221",
+                    "MATH 100", "MATH 101", "MATH 111", "MATH 200", "STAT 251"],
+      "start_term": { "year": 2028, "season": "W1" },
+      "num_terms": 4,
+      "max_credits_per_term": 15
+    },
+    {
+      "id": "U4",
+      "name": "3학년 파트타임 (소프트웨어) — 학기당 6학점이라 불가능",
+      "track": "SOFTWARE",
+      "completed": ["CPSC 110", "CPSC 121", "CPSC 210", "CPSC 213", "CPSC 221",
+                    "MATH 100", "MATH 101", "MATH 200", "MATH 221", "STAT 251"],
+      "start_term": { "year": 2028, "season": "W1" },
+      "num_terms": 4,
+      "max_credits_per_term": 6
+    },
+    {
+      "id": "U5",
+      "name": "막학기 (소프트웨어) — 수학을 미뤄 둠. MATH 101이 W2 전용이라 W1 한 학기로는 불가능",
+      "track": "SOFTWARE",
+      "completed": ["CPSC 110", "CPSC 121", "CPSC 210", "CPSC 213", "CPSC 221", "CPSC 310", "CPSC 313", "CPSC 320",
+                    "MATH 100", "MATH 221",
+                    "CPSC 304", "CPSC 317", "CPSC 319", "CPSC 344", "CPSC 404", "CPSC 410", "CPSC 416"],
+      "start_term": { "year": 2029, "season": "W1" },
+      "num_terms": 1,
+      "max_credits_per_term": 15
+    },
+    {
+      "id": "U6",
+      "name": "4학년 (시스템) — W2에 시작, 2학기 남음",
+      "track": "SYSTEMS",
+      "completed": ["CPSC 110", "CPSC 121", "CPSC 210", "CPSC 213", "CPSC 221", "CPSC 310", "CPSC 313", "CPSC 320",
+                    "MATH 100", "MATH 101", "MATH 200", "MATH 221", "STAT 251",
+                    "CPSC 317", "CPSC 304", "CPSC 322", "CPSC 404"],
+      "start_term": { "year": 2029, "season": "W2" },
+      "num_terms": 2,
+      "max_credits_per_term": 15
+    }
+  ]
+}

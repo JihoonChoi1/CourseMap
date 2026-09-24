@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "degree": {
+    "id": "UBC_CS_MAJOR",
+    "name": "UBC BSc Computer Science Major (0376) — 전공 요건만",
+    "groups": [
+      { "id": "CPSC_CORE",      "name": "CPSC 필수 (1~4학년)",                 "rule": "ALL",    "n": 0, "courses": ["CPSC 110", "CPSC 121", "CPSC 210", "CPSC 213", "CPSC 221", "CPSC 310", "CPSC 313", "CPSC 320"] },
+      { "id": "MATH_CORE",      "name": "MATH/STAT 필수",                      "rule": "ALL",    "n": 0, "courses": ["MATH 100", "MATH 101", "MATH 200", "STAT 251"] },
+      { "id": "LINEAR_ALGEBRA", "name": "MATH 111 or 221",                     "rule": "PICK_N", "n": 1, "courses": ["MATH 111", "MATH 221"] },
+      { "id": "UPPER_ELECTIVE", "name": "CPSC 300+ 9학점 + 400+ 9학점 (6과목)", "rule": "PICK_N", "n": 6, "courses": ["CPSC 304", "CPSC 317", "CPSC 319", "CPSC 322", "CPSC 330", "CPSC 340", "CPSC 344", "CPSC 404", "CPSC 410", "CPSC 415", "CPSC 416", "CPSC 417", "CPSC 418", "CPSC 423", "CPSC 425", "CPSC 440"] },
+      { "id": "UPPER_400",      "name": "그중 400+ 9학점 (3과목)",              "rule": "PICK_N", "n": 3, "courses": ["CPSC 404", "CPSC 410", "CPSC 415", "CPSC 416", "CPSC 417", "CPSC 418", "CPSC 423", "CPSC 425", "CPSC 440"] }
+    ]
+  },
+  "tracks": [
+    {
+      "id": "AI_ML",
+      "name": "AI/ML 엔지니어 (자체 정의, UBC 공식 트랙 아님)",
+      "groups": [
+        { "id": "AI_CORE",     "name": "AI 트랙 필수", "rule": "ALL",    "n": 0, "courses": ["CPSC 340"] },
+        { "id": "AI_ELECTIVE", "name": "AI 트랙 선택", "rule": "PICK_N", "n": 2, "courses": ["CPSC 322", "CPSC 423", "CPSC 425", "CPSC 440"] }
+      ]
+    },
+    {
+      "id": "SYSTEMS",
+      "name": "시스템/인프라 엔지니어 (자체 정의, UBC 공식 트랙 아님)",
+      "groups": [
+        { "id": "SYS_CORE",     "name": "시스템 트랙 필수", "rule": "ALL",    "n": 0, "courses": ["CPSC 317"] },
+        { "id": "SYS_ELECTIVE", "name": "시스템 트랙 선택", "rule": "PICK_N", "n": 2, "courses": ["CPSC 415", "CPSC 416", "CPSC 417", "CPSC 418"] }
+      ]
+    },
+    {
+      "id": "SOFTWARE",
+      "name": "소프트웨어/웹 개발자 (자체 정의, UBC 공식 트랙 아님)",
+      "groups": [
+        { "id": "SW_CORE",     "name": "소프트웨어 트랙 필수", "rule": "ALL",    "n": 0, "courses": ["CPSC 304"] },
+        { "id": "SW_ELECTIVE", "name": "소프트웨어 트랙 선택", "rule": "PICK_N", "n": 2, "courses": ["CPSC 319", "CPSC 344", "CPSC 404", "CPSC 410"] }
+      ]
+    }
+  ]
+}
