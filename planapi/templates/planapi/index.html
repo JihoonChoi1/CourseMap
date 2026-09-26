@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>졸업 코스플랜</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='7' width='4' height='8' fill='%230e7c7b'/%3E%3Crect x='6' y='3' width='4' height='12' fill='%231f5fad'/%3E%3Crect x='11' y='9' width='4' height='6' fill='%23b0731a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #eef1f5;
+  --surface: #ffffff;
+  --ink: #1a2433;
+  --muted: #5b6676;
+  --line: #d3d9e2;
+  --accent: #1f5fad;
+  --accent-ink: #ffffff;
+  --cpsc: #0e7c7b;
+  --math: #b0731a;
+  --stat: #8a4f9e;
+  --other: #5b6676;
+  --warn-bg: #fff3dc;
+  --warn: #7a4a00;
+  --ok-bg: #e3f4ec;
+  --ok: #1d6b45;
+  --err-bg: #fde8e6;
+  --err: #a8261b;
+  --unit: 17px; /* 학점 1당 높이 */
+  --radius: 6px;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+h1, h2, h3 { margin: 0; line-height: 1.25; }
+button, input { font: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.top {
+  display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  padding: 18px 28px; border-bottom: 1px solid var(--line); background: var(--surface);
+}
+.top h1 { font-size: 20px; font-weight: 700; }
+.top p { margin: 0; color: var(--muted); }
+
+.layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: calc(100vh - 64px); }
+@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+.side { border-right: 1px solid var(--line); background: var(--surface); padding: 22px 20px; }
+@media (max-width: 860px) { .side { border-right: 0; border-bottom: 1px solid var(--line); } }
+.side h2 { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+.side form { position: sticky; top: 0; }
+@media (min-width: 861px) { .students { max-height: calc(100vh - 330px); overflow-y: auto; padding-right: 2px; } }
+
+.students { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 6px; }
+.students label {
+  display: grid; grid-template-columns: auto 1fr; gap: 0 10px; align-items: start;
+  padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer;
+}
+.students input { margin: 4px 0 0; accent-color: var(--accent); }
+.students .name { font-weight: 600; line-height: 1.35; }
+.students .meta { grid-column: 2; color: var(--muted); font-size: 13px; }
+.students label:has(input:checked) { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.fields label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.fields input { padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); width: 100%; }
+.actions { display: grid; gap: 8px; }
+.btn { padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--accent); cursor: pointer; font-weight: 600; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.secondary { background: var(--surface); color: var(--accent); }
+.btn:disabled { opacity: .55; cursor: progress; }
+.hint { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+
+.main { padding: 26px 28px 40px; min-width: 0; }
+.empty { color: var(--muted); max-width: 60ch; margin-top: 40px; }
+.headline { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+.lede { margin: 0 0 14px; max-width: 72ch; }
+.notes { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 6px; max-width: 80ch; }
+.notes li { padding: 8px 12px; border-radius: var(--radius); }
+.notes .warn { background: var(--warn-bg); color: var(--warn); }
+.notes .ok { background: var(--ok-bg); color: var(--ok); }
+.notes .err { background: var(--err-bg); color: var(--err); }
+
+/* 학기 보드: 칸 높이 = 학점 상한, 블록 높이 = 학점 */
+.board {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, 1fr); gap: 14px;
+  overflow-x: auto; padding-bottom: 8px; margin-bottom: 28px;
+}
+.term { min-width: 0; }
+.term-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.term-head strong { font-size: 15px; }
+.term-head span { color: var(--muted); font-size: 13px; }
+.stack {
+  height: calc(var(--cap) * var(--unit) + 2px);
+  border-top: 2px dashed var(--line); border-bottom: 2px solid var(--ink);
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 0;
+  background: repeating-linear-gradient(to top, transparent 0, transparent calc(var(--unit) - 1px), rgba(26,36,51,.04) calc(var(--unit) - 1px), rgba(26,36,51,.04) var(--unit));
+}
+.stack .none { margin: auto; color: var(--muted); font-size: 13px; }
+.tile {
+  height: calc(var(--cr) * var(--unit));
+  border-left: 4px solid var(--c); background: color-mix(in srgb, var(--c) 13%, var(--surface));
+  border-top: 1px solid var(--surface);
+  padding: 4px 8px; overflow: hidden; display: flex; flex-direction: column; justify-content: center;
+}
+.tile b { font-size: 13px; line-height: 1.2; }
+.tile small { color: var(--muted); font-size: 12px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.s-cpsc { --c: var(--cpsc); } .s-math { --c: var(--math); } .s-stat { --c: var(--stat); } .s-other { --c: var(--other); }
+
+.section { margin-bottom: 26px; max-width: 80ch; }
+.section h3 { font-size: 16px; margin-bottom: 8px; }
+.groups { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.groups li { display: grid; grid-template-columns: minmax(140px, 220px) 1fr; gap: 12px; }
+.groups .g { color: var(--muted); }
+@media (max-width: 600px) {
+  .groups li { grid-template-columns: 1fr; gap: 0; margin-bottom: 6px; }
+  .main { padding: 20px 16px 32px; }
+  .top { padding: 14px 16px; }
+  .side { padding: 18px 16px; }
+}
+.errors { margin: 0; padding-left: 18px; }
+.errors li { margin-bottom: 6px; }
+.errors code { font-weight: 600; font-family: inherit; }
+.export { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 14px 16px; }
+.export p { margin: 0 0 6px; }
+.export .key { color: var(--muted); font-size: 13px; word-break: break-all; }
+.export a { color: var(--accent); font-weight: 600; }
+.small { color: var(--muted); font-size: 13px; }
+details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .board.fresh .tile { animation: rise .35s ease-out both; }
+  @keyframes rise { from { transform: scaleY(.2); transform-origin: bottom; opacity: 0; } to { transform: none; opacity: 1; } }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>졸업 코스플랜</h1>
+  {% if data %}<p>{{ data.degree }}</p>{% endif %}
+</header>
+
+{% if not data %}
+<main class="main">
+  <div class="empty">
+    <h2>불러올 데이터가 없습니다</h2>
+    <p>DB에 카탈로그가 적재되지 않았습니다. 터미널에서 <b>.venv/bin/python manage.py load_data --data-dir data/ubc</b>
+      (UBC 실데이터) 또는 <b>.venv/bin/python manage.py load_data</b>(가상 데이터)를 실행한 뒤 새로고침하세요.</p>
+  </div>
+</main>
+{% else %}
+{{ data|json_script:"page-data" }}
+<div class="layout">
+  <aside class="side">
+    <form id="form">
+      <h2 id="students-title">학생</h2>
+      <ul class="students" role="radiogroup" aria-labelledby="students-title" id="students"></ul>
+      <div class="fields">
+        <label>학기당 최대 학점<input id="max-credits" type="number" min="1" max="99" inputmode="numeric"></label>
+        <label>남은 학기 수<input id="num-terms" type="number" min="1" max="20" inputmode="numeric"></label>
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="submit" id="run-sync">계획 만들기</button>
+        <button class="btn secondary" type="button" id="run-job">계획 만들고 S3에 저장</button>
+      </div>
+      <p class="hint">빈칸은 학생 기본값을 씁니다. S3 저장은 Celery 워커가 떠 있어야 합니다.</p>
+    </form>
+  </aside>
+
+  <main class="main" id="result" aria-live="polite">
+    <p class="empty">왼쪽에서 학생을 고르고 <b>계획 만들기</b>를 누르세요.</p>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("page-data").textContent);
+  var byId = {};
+  DATA.students.forEach(function (s) { byId[s.id] = s; });
+
+  function el(tag, attrs, children) {
+    var n = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      if (k === "class") n.className = attrs[k];
+      else if (k === "style") n.setAttribute("style", attrs[k]);
+      else n.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) {
+      if (c === null || c === undefined) return;
+      n.appendChild(typeof c === "string" || typeof c === "number" ? document.createTextNode(String(c)) : c);
+    });
+    return n;
+  }
+
+  function subjectClass(id) {
+    var m = /^[A-Za-z]+/.exec(id);
+    var s = m ? m[0].toUpperCase() : "";
+    if (s === "CPSC" || s === "CS") return "s-cpsc";
+    if (s === "MATH") return "s-math";
+    if (s === "STAT") return "s-stat";
+    return "s-other";
+  }
+
+  // ---- 학생 목록 ----
+  var list = document.getElementById("students");
+  DATA.students.forEach(function (s, i) {
+    var input = el("input", { type: "radio", name: "student", value: s.id });
+    if (i === 0) input.checked = true;
+    var track = DATA.tracks[s.track] || s.track;
+    list.appendChild(el("li", {}, [el("label", {}, [
+      input,
+      el("span", { class: "name" }, [s.id + " " + s.name]),
+      el("span", { class: "meta", title: track }, [track.replace(/\s*\(.*\)\s*$/, "") + ", " + s.start + " 시작"]),
+      el("span", { class: "meta" }, ["기본 " + s.num_terms + "학기 × " + s.max_credits + "학점, 이수 " + s.completed.length + "과목"]),
+    ])]));
+  });
+  list.addEventListener("change", fillDefaults);
+
+  var capInput = document.getElementById("max-credits");
+  var termsInput = document.getElementById("num-terms");
+  function selected() {
+    var r = document.querySelector("input[name=student]:checked");
+    return r ? byId[r.value] : null;
+  }
+  function fillDefaults() {
+    var s = selected();
+    if (!s) return;
+    capInput.placeholder = s.max_credits;
+    termsInput.placeholder = s.num_terms;
+    capInput.value = "";
+    termsInput.value = "";
+  }
+  fillDefaults();
+
+  function query() {
+    var q = [];
+    if (capInput.value !== "") q.push("max_credits=" + encodeURIComponent(capInput.value));
+    if (termsInput.value !== "") q.push("num_terms=" + encodeURIComponent(termsInput.value));
+    return q.length ? "?" + q.join("&") : "";
+  }
+  function effectiveCap(s) { return capInput.value !== "" ? parseInt(capInput.value, 10) : s.max_credits; }
+
+  // ---- 결과 그리기 ----
+  var result = document.getElementById("result");
+  function show(nodes) {
+    result.replaceChildren.apply(result, nodes);
+  }
+  function showError(message) {
+    show([el("ul", { class: "notes" }, [el("li", { class: "err" }, [message])])]);
+  }
+  function showBusy(message) {
+    show([el("p", { class: "empty" }, [message])]);
+  }
+
+  function renderPlan(s, plan, meta, extra) {
+    var nodes = [];
+    var completed = {};
+    s.completed.forEach(function (c) { completed[c] = true; });
+    nodes.push(el("h2", { class: "headline" }, [s.id + " " + s.name]));
+
+    var notes = el("ul", { class: "notes" });
+    if (plan.feasible) {
+      var total = 0;
+      plan.terms.forEach(function (t) { total += t.credits; });
+      var first = plan.terms[0], last = plan.terms[plan.terms.length - 1];
+      nodes.push(el("p", { class: "lede" }, [
+        plan.terms.length + "학기 동안 " + total + "학점을 듣고 졸업 요건을 채웁니다 (" +
+        first.year + " " + first.season + " ~ " + last.year + " " + last.season + ")."
+      ]));
+      if (meta.min_terms_proven) {
+        notes.appendChild(el("li", { class: "ok" }, ["이보다 빨리 졸업하는 계획은 없습니다."]));
+      } else if (meta.used_fallback) {
+        notes.appendChild(el("li", { class: "warn" }, [
+          "선택 과목 조합이 너무 많아 비용 기준 조합 하나만 확인했습니다. 더 짧은 계획이 있을 수 있습니다."]));
+      } else {
+        notes.appendChild(el("li", { class: "warn" }, [
+          "탐색 한도를 넘어 최소 학기인지 확인하지 못했습니다. 더 짧은 계획이 있을 수 있습니다."]));
+      }
+    } else {
+      nodes.push(el("p", { class: "lede" }, [
+        "이 조건으로는 졸업 계획을 만들 수 없습니다. 학기당 최대 학점이나 남은 학기 수를 늘려 보세요."]));
+      if (meta.used_fallback) {
+        notes.appendChild(el("li", { class: "warn" }, [
+          "선택 과목 조합이 너무 많아 일부만 확인했습니다. 다른 조합으로는 가능할 수도 있습니다."]));
+      }
+    }
+    if (notes.children.length) nodes.push(notes);
+
+    if (plan.feasible) {
+      var cap = effectiveCap(s);
+      var board = el("div", { class: "board fresh", role: "list", "aria-label": "학기별 계획" });
+      plan.terms.forEach(function (t) {
+        var stack = el("div", { class: "stack", style: "--cap:" + cap });
+        if (t.courses.length === 0) stack.appendChild(el("span", { class: "none" }, ["수강 없음"]));
+        t.courses.forEach(function (cid) {
+          var c = DATA.courses[cid] || { title: "", credits: 1 };
+          stack.appendChild(el("div", {
+            class: "tile " + subjectClass(cid), style: "--cr:" + c.credits,
+            title: cid + " " + c.title + " (" + c.credits + "학점)"
+          }, [el("b", {}, [cid + "  " + c.credits + "학점"]), el("small", {}, [c.title])]));
+        });
+        board.appendChild(el("div", { class: "term", role: "listitem" }, [
+          el("div", { class: "term-head" }, [el("strong", {}, [t.year + " " + t.season]),
+                                             el("span", {}, [t.credits + " / " + cap + "학점"])]),
+          stack
+        ]));
+      });
+      nodes.push(board);
+
+      var groups = el("ul", { class: "groups" });
+      Object.keys(plan.chosen).forEach(function (gid) {
+        var names = plan.chosen[gid].map(function (c) { return completed[c] ? c + " (이수)" : c; });
+        groups.appendChild(el("li", {}, [el("span", { class: "g" }, [DATA.groups[gid] || gid]),
+                                         el("span", {}, [names.join(", ")])]));
+      });
+      if (groups.children.length) {
+        nodes.push(el("div", { class: "section" }, [el("h3", {}, ["고른 선택 과목"]), groups]));
+      }
+    } else {
+      var errs = el("ul", { class: "errors" });
+      plan.errors.forEach(function (e) {
+        errs.appendChild(el("li", {}, [el("code", {}, [e.code]), " " + e.message]));
+      });
+      nodes.push(el("div", { class: "section" }, [el("h3", {}, ["이유"]), errs]));
+    }
+
+    if (s.completed.length) {
+      nodes.push(el("div", { class: "section" }, [el("details", {}, [
+        el("summary", {}, ["이미 이수한 과목 " + s.completed.length + "개"]),
+        el("p", { class: "small" }, [s.completed.join(", ")])
+      ])]));
+    }
+    if (extra) nodes.push(extra);
+    nodes.push(el("p", { class: "small" }, ["평가한 선택 조합 후보 " + meta.candidates + "개"]));
+    show(nodes);
+  }
+
+  function exportPanel(job) {
+    var ex = job.export;
+    var box = el("div", { class: "section export" }, [el("h3", {}, ["S3 저장"])]);
+    if (!ex) {
+      box.appendChild(el("p", {}, ["S3 저장이 꺼져 있습니다 (S3_EXPORT_ENABLED=0)."]));
+    } else if (ex.status === "SUCCESS") {
+      box.appendChild(el("p", {}, [el("a", { href: ex.url, target: "_blank", rel: "noopener" }, ["결과 파일 받기 (JSON)"])]));
+      box.appendChild(el("p", { class: "small" }, ["링크는 " + DATA.presign_minutes + "분 동안 유효합니다."]));
+      box.appendChild(el("p", { class: "key" }, ["s3://" + ex.bucket + "/" + ex.key]));
+    } else if (ex.status === "FAILED") {
+      box.appendChild(el("p", {}, ["계획은 만들었지만 S3에 올리지 못했습니다: " + ex.error]));
+      box.appendChild(el("p", { class: "small" }, ["S3를 확인한 뒤 manage.py export_plan_jobs로 다시 올릴 수 있습니다."]));
+    } else {
+      box.appendChild(el("p", {}, ["S3에 올리는 중입니다."]));
+    }
+    box.appendChild(el("p", { class: "small" }, ["job " + job.job_id]));
+    return box;
+  }
+
+  function readError(resp) {
+    return resp.json().then(function (b) { return b.detail || ("HTTP " + resp.status); },
+                            function () { return "HTTP " + resp.status; });
+  }
+
+  var btnSync = document.getElementById("run-sync");
+  var btnJob = document.getElementById("run-job");
+  function busy(on) { btnSync.disabled = on; btnJob.disabled = on; }
+
+  // ---- 동기: GET /api/students/{id}/plan ----
+  document.getElementById("form").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var s = selected();
+    if (!s) return;
+    busy(true);
+    showBusy("계획을 만드는 중입니다.");
+    fetch("/api/students/" + encodeURIComponent(s.id) + "/plan" + query())
+      .then(function (resp) {
+        if (!resp.ok) return readError(resp).then(showError);
+        return resp.json().then(function (plan) {
+          renderPlan(s, plan, {
+            candidates: resp.headers.get("X-Candidates"),
+            used_fallback: resp.headers.get("X-Used-Fallback") === "true",
+            min_terms_proven: resp.headers.get("X-Min-Terms-Proven") === "true"
+          });
+        });
+      })
+      .catch(function (e) { showError("서버에 연결할 수 없습니다: " + e.message); })
+      .finally(function () { busy(false); });
+  });
+
+  // ---- 비동기: POST /api/students/{id}/plan-jobs -> GET /api/plan-jobs/{job_id} ----
+  btnJob.addEventListener("click", function () {
+    var s = selected();
+    if (!s) return;
+    busy(true);
+    showBusy("작업을 만드는 중입니다.");
+    var deadline = Date.now() + 60000;
+
+    function poll(jobId) {
+      return fetch("/api/plan-jobs/" + jobId).then(function (resp) {
+        if (!resp.ok) return readError(resp).then(showError);
+        return resp.json().then(function (job) {
+          var done = job.status === "FAILED" ||
+                     (job.status === "SUCCESS" && (!job.export || job.export.status !== "PENDING"));
+          if (!done) {
+            if (Date.now() > deadline) {
+              showError("60초 안에 끝나지 않았습니다. Celery 워커가 떠 있는지 확인하세요 (job " + jobId + ").");
+              return;
+            }
+            showBusy(job.status === "SUCCESS" ? "S3에 올리는 중입니다." :
+                     job.status === "RUNNING" ? "워커가 계산하는 중입니다." : "워커를 기다리는 중입니다.");
+            return new Promise(function (r) { setTimeout(r, 500); }).then(function () { return poll(jobId); });
+          }
+          if (job.status === "FAILED") {
+            showError("작업이 실패했습니다 (" + job.error.code + "): " + job.error.detail);
+            return;
+          }
+          renderPlan(s, job.plan, job.engine, exportPanel(job));
+        });
+      });
+    }
+
+    fetch("/api/students/" + encodeURIComponent(s.id) + "/plan-jobs" + query(), { method: "POST" })
+      .then(function (resp) {
+        if (!resp.ok) return readError(resp).then(showError);
+        return resp.json().then(function (b) { return poll(b.job_id); });
+      })
+      .catch(function (e) { showError("서버에 연결할 수 없습니다: " + e.message); })
+      .finally(function () { busy(false); });
+  });
+})();
+</script>
+{% endif %}
+</body>
+</html>
