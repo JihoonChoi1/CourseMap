@@ -16,3 +16,6 @@ goengine/bin/
 
 # Env
 .env
+
+# Browser demo build output
+demo/dist/

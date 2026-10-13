@@ -4,6 +4,19 @@ CourseMap builds term-by-term course plans from a course catalog, degree require
 
 The repository includes a Python CLI, a small web interface, a Django API, and a Go version of the planning engine. The web interface and API use MySQL; background jobs run through Celery and Redis and can export their results to S3-compatible storage.
 
+**[Try the live demo](https://jihoonchoi1.github.io/CourseMap/)**: check off the UBC courses you've finished and see the rest of the plan. It runs the Go engine in your browser as WebAssembly, so it needs no server.
+
+## Run the demo locally
+
+The demo page lives in `demo/`. Build it with Go, then serve the output folder:
+
+```bash
+demo/build.sh
+python3 -m http.server -d demo/dist 8080
+```
+
+Open <http://127.0.0.1:8080/>. Pushing to `master` rebuilds it and publishes it to GitHub Pages (`.github/workflows/demo.yml`).
+
 ## Try the CLI
 
 The CLI only needs Python. It reads the sample JSON files in `data/` by default.

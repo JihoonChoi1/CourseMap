@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CourseMap</title>
+<meta name="description" content="Check off the UBC Computer Science courses you've finished and CourseMap plans the rest, term by term. The planning engine runs in your browser as Go compiled to WebAssembly.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wdth,wght@0,75..100,400..700;1,75..100,400..700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --page: #edf1f4;
+  --sheet: #ffffff;
+  --ink: #172434;
+  --muted: #586474;
+  --rule: #d3dae2;
+  --tick: #e4e9ee;
+  --cpsc: #0f6f73;
+  --math: #b06f0c;
+  --stat: #85479a;
+  --block-ink: #ffffff;
+  --action: #172434;
+  --action-ink: #ffffff;
+  --ok: #1b6b47;
+  --warn: #7a4b00;
+  --warn-bg: #fff2d9;
+  --err: #a3261a;
+  --err-bg: #fce7e4;
+  --focus: #2f6feb;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #121a23;
+    --sheet: #1a2430;
+    --ink: #e5eaf0;
+    --muted: #9ba7b6;
+    --rule: #2e3a48;
+    --tick: #243040;
+    --cpsc: #45b8bb;
+    --math: #e3a443;
+    --stat: #c592da;
+    --block-ink: #0f1620;
+    --action: #e5eaf0;
+    --action-ink: #121a23;
+    --ok: #74d3a3;
+    --warn: #f2c46b;
+    --warn-bg: #352b16;
+    --err: #ff8f80;
+    --err-bg: #3a1f1c;
+    --focus: #7aa7ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #121a23;
+  --sheet: #1a2430;
+  --ink: #e5eaf0;
+  --muted: #9ba7b6;
+  --rule: #2e3a48;
+  --tick: #243040;
+  --cpsc: #45b8bb;
+  --math: #e3a443;
+  --stat: #c592da;
+  --block-ink: #0f1620;
+  --action: #e5eaf0;
+  --action-ink: #121a23;
+  --ok: #74d3a3;
+  --warn: #f2c46b;
+  --warn-bg: #352b16;
+  --err: #ff8f80;
+  --err-bg: #3a1f1c;
+  --focus: #7aa7ff;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+a { color: inherit; text-underline-offset: 3px; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.narrow { font-stretch: 75%; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+
+/* ---- intro ---- */
+.intro { padding: 40px 0 28px; display: grid; gap: 10px; max-width: 70ch; }
+.intro h1 {
+  margin: 0;
+  font-size: clamp(2.6rem, 6vw, 4rem);
+  line-height: 0.95;
+  font-weight: 700;
+  font-stretch: 75%;
+  letter-spacing: -0.01em;
+}
+.intro p { margin: 0; font-size: 1.125rem; }
+.intro .aside { font-size: 0.95rem; color: var(--muted); }
+
+/* ---- layout ---- */
+.planner { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 920px) { .planner { grid-template-columns: minmax(0, 1fr); } }
+
+.form, .result { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; }
+.form { padding: 22px 22px 24px; display: grid; gap: 26px; }
+.result { padding: 24px 24px 22px; min-height: 420px; }
+@media (min-width: 921px) { .result { position: sticky; top: 16px; } }
+@media (max-width: 480px) { .form, .result { padding: 18px 16px; } }
+
+.step { display: grid; gap: 12px; border: 0; margin: 0; padding: 0; min-width: 0; }
+.step-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.step h2, .step legend { margin: 0; padding: 0; font-size: 1.05rem; font-weight: 650; }
+.hint { margin: 0; font-size: 0.875rem; color: var(--muted); }
+.link-btn {
+  border: 0; background: none; padding: 2px 0; cursor: pointer;
+  font-size: 0.875rem; color: var(--muted); text-decoration: underline; text-underline-offset: 3px;
+}
+.link-btn:hover { color: var(--ink); }
+
+/* samples */
+.samples { display: flex; flex-wrap: wrap; gap: 8px; }
+.sample {
+  border: 1px solid var(--rule); background: transparent; border-radius: 999px;
+  padding: 5px 12px; font-size: 0.875rem; cursor: pointer; text-align: left;
+}
+.sample:hover { border-color: var(--muted); }
+.sample[aria-pressed="true"] { background: var(--action); color: var(--action-ink); border-color: var(--action); }
+
+/* course picker */
+.years { display: grid; gap: 12px; }
+.year { display: grid; grid-template-columns: 54px 1fr; gap: 10px; align-items: start; }
+.year > span { font-size: 0.8125rem; color: var(--muted); padding-top: 9px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  --c: var(--cpsc);
+  display: inline-flex; align-items: baseline; gap: 5px;
+  border: 1px solid var(--rule); border-left: 4px solid var(--c);
+  background: transparent; border-radius: 7px;
+  padding: 5px 9px 5px 8px; cursor: pointer;
+  font-stretch: 75%; font-weight: 600; font-size: 0.95rem; line-height: 1.2;
+}
+.chip small { font-weight: 400; color: var(--muted); font-size: 0.75rem; }
+.chip:hover { border-color: var(--c); }
+.chip[aria-pressed="true"] { background: var(--c); border-color: var(--c); color: var(--block-ink); }
+.chip[aria-pressed="true"] small { color: inherit; opacity: 0.85; }
+.chip.MATH { --c: var(--math); }
+.chip.STAT { --c: var(--stat); }
+
+/* track */
+.tracks { display: grid; gap: 6px; }
+.track { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center; padding: 9px 12px;
+  border: 1px solid var(--rule); border-radius: 9px; cursor: pointer; }
+.track:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.track input { margin: 0; accent-color: var(--ink); }
+.track b { font-weight: 600; }
+.track small { grid-column: 2; color: var(--muted); font-size: 0.8125rem; }
+
+/* schedule */
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fields label:first-child { grid-column: 1 / -1; }
+.fields label { display: grid; gap: 4px; font-size: 0.8125rem; color: var(--muted); }
+.fields input, .fields select {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 8px;
+  background: var(--sheet); color: var(--ink); font-size: 1rem;
+}
+
+/* ---- result ---- */
+.status { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 14px;
+  font-size: 0.8125rem; color: var(--muted); min-height: 1.2em; }
+.headline { margin: 0; font-size: clamp(1.7rem, 3.4vw, 2.3rem); line-height: 1.05; font-weight: 700; font-stretch: 75%; }
+.sub { margin: 6px 0 0; color: var(--muted); }
+.checks { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 6px; font-size: 0.9375rem; }
+.checks li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start; }
+.checks li::before { content: ""; width: 14px; height: 14px; margin-top: 4px; border-radius: 50%; background: currentColor; }
+.checks .ok::before { background: var(--ok); }
+.checks .warn::before { background: var(--warn); border-radius: 3px; }
+.checks .bad::before { background: var(--err); border-radius: 3px; }
+.checks .bad { color: var(--err); }
+
+.board { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 10px; }
+.term { display: grid; grid-template-columns: 84px minmax(0, 1fr) 46px; gap: 12px; align-items: center; }
+.when { display: grid; line-height: 1.15; }
+.when b { font-stretch: 75%; font-size: 1.15rem; font-weight: 700; }
+.when small { color: var(--muted); font-size: 0.75rem; }
+.lane {
+  display: flex; gap: 3px; height: 66px; padding: 3px;
+  border: 1px dashed var(--rule); border-radius: 9px;
+  background-image: linear-gradient(to right, var(--tick) 1px, transparent 1px);
+  background-size: calc((100% - 6px) / var(--cap)) 100%;
+  background-position: 3px 0;
+  background-repeat: repeat-x;
+}
+.block {
+  --c: var(--cpsc);
+  flex: 0 0 calc((100% - 3px * (var(--n) - 1)) * var(--cr) / var(--cap));
+  min-width: 0; overflow: hidden;
+  background: var(--c); color: var(--block-ink);
+  border-radius: 6px; padding: 6px 7px;
+  display: flex; flex-direction: column; justify-content: center;
+  font-stretch: 75%; line-height: 1;
+}
+.block.MATH { --c: var(--math); }
+.block.STAT { --c: var(--stat); }
+.block span { font-size: 0.75rem; font-weight: 600; opacity: 0.85; }
+.block b { font-size: 1.5rem; font-weight: 700; }
+.block small { font-size: 0.6875rem; margin-top: 3px; opacity: 0.85; }
+.load { font-size: 0.875rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.load b { color: var(--ink); font-weight: 600; }
+.empty-lane { align-self: center; padding-left: 8px; font-size: 0.8125rem; color: var(--muted); }
+@media (max-width: 480px) {
+  .term { grid-template-columns: 62px minmax(0, 1fr); }
+  .load { display: none; }
+  .lane { height: 58px; }
+  .block b { font-size: 1.2rem; }
+  .block small { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .board.animate .block { animation: place 0.38s cubic-bezier(.2, .7, .3, 1) both; animation-delay: var(--d); }
+}
+@keyframes place { from { opacity: 0; transform: translateX(-14px); } }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 14px 0 0; padding: 0; list-style: none; font-size: 0.8125rem; color: var(--muted); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; background: var(--cpsc); }
+.legend .MATH { background: var(--math); }
+.legend .STAT { background: var(--stat); }
+
+.reasons { margin: 18px 0 0; padding: 14px 16px 14px 34px; background: var(--err-bg); border-radius: 10px; display: grid; gap: 6px; font-size: 0.9375rem; }
+.fixes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.btn {
+  border: 1px solid var(--action); background: var(--action); color: var(--action-ink);
+  border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: 0.9375rem;
+}
+.btn.quiet { background: transparent; color: var(--ink); border-color: var(--rule); }
+
+.picked { margin-top: 22px; display: grid; gap: 6px; font-size: 0.9375rem; }
+.picked h3 { margin: 0 0 2px; font-size: 1rem; font-weight: 650; }
+.picked p { margin: 0; }
+.picked .group { color: var(--muted); }
+.foot { margin: 20px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 0.8125rem; color: var(--muted); }
+
+.loading { display: grid; place-items: center; min-height: 360px; color: var(--muted); text-align: center; }
+
+/* ---- how it works ---- */
+.how { padding: 64px 0 24px; display: grid; gap: 22px; }
+.how h2 { margin: 0; font-size: clamp(1.9rem, 4vw, 2.6rem); font-weight: 700; font-stretch: 75%; line-height: 1; }
+.how p { margin: 0; max-width: 68ch; }
+.diagram { overflow-x: auto; background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 18px; }
+.diagram svg { display: block; width: 100%; min-width: 640px; height: auto; }
+.diagram .box rect { fill: var(--sheet); stroke: var(--rule); stroke-width: 1.5; }
+.diagram .box.here rect { fill: var(--ink); stroke: var(--ink); }
+.diagram .box text { fill: var(--ink); font-size: 14px; font-weight: 600; }
+.diagram .box.here text { fill: var(--sheet); }
+.diagram .box .note { fill: var(--muted); font-size: 11.5px; font-weight: 400; }
+.diagram .box.here .note { fill: var(--sheet); opacity: 0.75; }
+.diagram .edge { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+.diagram .edge-label { fill: var(--muted); font-size: 11.5px; }
+.diagram .arrow { fill: var(--muted); }
+.diagram-key { margin: 12px 0 0; font-size: 0.875rem; color: var(--muted); }
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+@media (max-width: 760px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.cols h3 { margin: 0 0 10px; font-size: 1.1rem; font-weight: 650; }
+.cols ul { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
+.disclaimer { margin: 8px 0 0; padding: 18px 0 48px; border-top: 1px solid var(--rule); font-size: 0.875rem; color: var(--muted); max-width: 80ch; }
+.disclaimer p { margin: 0 0 6px; }
+
+/* phone: the result sits below the form, so keep a one-line summary in reach */
+.peek { display: none; }
+@media (max-width: 920px) {
+  .peek {
+    position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 5;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 10px 10px 10px 16px; border-radius: 12px;
+    background: var(--action); color: var(--action-ink);
+    box-shadow: 0 6px 24px rgba(10, 20, 30, 0.25);
+  }
+  .peek[hidden] { display: none; }
+  .peek b { font-stretch: 75%; font-size: 1.15rem; }
+  .peek button { border: 0; border-radius: 8px; padding: 7px 12px; background: var(--action-ink); color: var(--action); font-weight: 600; cursor: pointer; }
+}
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="intro">
+    <h1>CourseMap</h1>
+    <p>Check off the UBC Computer Science courses you've finished and pick a track. CourseMap plans the rest term by term, around prerequisites, the terms each course is offered, and your credit limit.</p>
+    <p class="aside">The plan is computed right here in your browser by the project's Go engine, compiled to WebAssembly. Read <a href="#how">how it works</a> or the <a href="https://github.com/JihoonChoi1/CourseMap">source on GitHub</a>.</p>
+  </header>
+
+  <main class="planner">
+    <form class="form" id="form" novalidate>
+      <section class="step" aria-labelledby="samples-title">
+        <h2 id="samples-title">Start from a sample student</h2>
+        <div class="samples" id="samples"></div>
+        <p class="hint">Or set everything yourself below. The plan updates as you go.</p>
+      </section>
+
+      <section class="step" aria-labelledby="courses-title">
+        <div class="step-head">
+          <h2 id="courses-title">1. Courses you've finished</h2>
+          <button class="link-btn" type="button" id="clear">Clear all</button>
+        </div>
+        <div class="years" id="years"></div>
+      </section>
+
+      <fieldset class="step">
+        <legend>2. Career track</legend>
+        <div class="tracks" id="tracks"></div>
+      </fieldset>
+
+      <section class="step" aria-labelledby="schedule-title">
+        <h2 id="schedule-title">3. Your schedule</h2>
+        <div class="fields">
+          <label>First term<select id="start"></select></label>
+          <label>Terms left<input id="terms" type="number" min="1" max="12" inputmode="numeric"></label>
+          <label>Max credits per term<input id="cap" type="number" min="3" max="18" inputmode="numeric"></label>
+        </div>
+        <p class="hint">Terms follow UBC's Winter Session: 2027 W1 runs Sep–Dec 2027 and 2027 W2 runs Jan–Apr 2028. Summer terms aren't planned. A full load is about 15 credits.</p>
+      </section>
+    </form>
+
+    <section class="result" id="result" aria-live="polite" aria-busy="true">
+      <div class="loading" id="loading"><p>Loading the planning engine…</p></div>
+    </section>
+  </main>
+
+  <section class="how" id="how" aria-labelledby="how-title">
+    <h2 id="how-title">How it works</h2>
+    <p>This page runs only the planning engine. In the full project, the engine sits behind a Django REST API: a GET request returns a plan right away, while a POST queues a background job that a Celery worker picks up from Redis, runs on the Go engine, and stores in MySQL before exporting the result to S3.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 760 262" role="img" aria-labelledby="diagram-title">
+        <title id="diagram-title">Architecture: the browser calls a Django REST API. GET requests run the Python engine directly. POST requests store a job in MySQL and queue it in Redis; a Celery worker runs the Go engine, saves the result to MySQL, and exports it to S3. On this demo page, the browser runs the Go engine itself.</title>
+        <defs>
+          <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="arrow" d="M0,0 L10,5 L0,10 z"/>
+          </marker>
+        </defs>
+        <path class="edge" d="M160 132 H198" marker-end="url(#arrowhead)"/>
+        <path class="edge" d="M358 120 C380 120 380 54 398 54" marker-end="url(#arrowhead)"/>
+        <text class="edge-label" x="372" y="92" text-anchor="end">GET: plan now</text>
+        <path class="edge" d="M358 132 H398" marker-end="url(#arrowhead)"/>
+        <text class="edge-label" x="378" y="124" text-anchor="middle">POST</text>
+        <path class="edge" d="M358 144 C380 144 380 212 398 212" marker-end="url(#arrowhead)"/>
+        <text class="edge-label" x="372" y="190" text-anchor="end">jobs</text>
+        <path class="edge" d="M558 132 H598" marker-end="url(#arrowhead)"/>
+        <path class="edge" d="M670 110 V78" marker-end="url(#arrowhead)"/>
+        <text class="edge-label" x="678" y="98">subprocess</text>
+        <path class="edge" d="M670 154 V188" marker-end="url(#arrowhead)"/>
+        <path class="edge" d="M600 146 C580 146 580 220 562 220" marker-end="url(#arrowhead)"/>
+
+        <g class="box here"><rect x="20" y="110" width="140" height="44" rx="8"/><text x="90" y="128" text-anchor="middle">Browser</text><text class="note" x="90" y="145" text-anchor="middle">this page</text></g>
+        <g class="box"><rect x="200" y="110" width="158" height="44" rx="8"/><text x="279" y="128" text-anchor="middle">Django REST API</text><text class="note" x="279" y="145" text-anchor="middle">/plan, /plan-jobs</text></g>
+        <g class="box"><rect x="400" y="32" width="158" height="44" rx="8"/><text x="479" y="50" text-anchor="middle">Python engine</text><text class="note" x="479" y="67" text-anchor="middle">reference version</text></g>
+        <g class="box"><rect x="400" y="110" width="158" height="44" rx="8"/><text x="479" y="128" text-anchor="middle">Redis</text><text class="note" x="479" y="145" text-anchor="middle">job queue</text></g>
+        <g class="box"><rect x="400" y="190" width="158" height="44" rx="8"/><text x="479" y="208" text-anchor="middle">MySQL</text><text class="note" x="479" y="225" text-anchor="middle">courses, students, jobs</text></g>
+        <g class="box"><rect x="600" y="110" width="140" height="44" rx="8"/><text x="670" y="128" text-anchor="middle">Celery worker</text><text class="note" x="670" y="145" text-anchor="middle">runs each job once</text></g>
+        <g class="box here"><rect x="600" y="32" width="140" height="44" rx="8"/><text x="670" y="50" text-anchor="middle">Go engine</text><text class="note" x="670" y="67" text-anchor="middle">also runs here (WASM)</text></g>
+        <g class="box"><rect x="600" y="190" width="140" height="44" rx="8"/><text x="670" y="208" text-anchor="middle">S3 export</text><text class="note" x="670" y="225" text-anchor="middle">presigned download</text></g>
+      </svg>
+      <p class="diagram-key">Filled boxes are what this page runs. Everything else needs a server; run it locally with <code>./run.sh web</code>.</p>
+    </div>
+
+    <div class="cols">
+      <div>
+        <h3>Backend details</h3>
+        <ul>
+          <li>Each job is keyed on a SHA-256 hash of its full input, stored as a unique key in MySQL. A repeated request gets the existing job back instead of a second computation, even when two arrive at once.</li>
+          <li>Workers claim a job with a single conditional update, so a job Redis delivers twice still runs once.</li>
+          <li>If Redis is down, the API answers 503 and leaves no orphaned job behind.</li>
+          <li>Finished plans are exported to S3-compatible storage and returned with a presigned download link.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>How it's tested</h3>
+        <ul>
+          <li>The Go engine is a port of the Python original and must return byte-identical JSON: 37,699 test cases compared, 0 differences.</li>
+          <li>A separate brute-force solver checked the engine's feasible and infeasible answers on 99,069 random course catalogs, with no disagreements.</li>
+          <li>Every plan is re-checked by an independent verifier before it's shown, on this page too.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="disclaimer">
+    <p>Course data is a simplified selection of 30 UBC Vancouver computer science, math, and statistics courses, transcribed by hand from the 2026/27 Academic Calendar. Some rules are approximated, and the three tracks are made up for this project, not official UBC programs. Check the <a href="https://vancouver.calendar.ubc.ca/">UBC Academic Calendar</a> before registering for anything.</p>
+    <p><a href="https://github.com/JihoonChoi1/CourseMap/blob/master/data/ubc/SOURCES.md">Where each course's data comes from</a></p>
+  </footer>
+</div>
+
+<div class="peek" id="peek" hidden><b id="peek-text"></b><button type="button" id="peek-btn">View plan</button></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var TIMEOUT_MS = 15000;
+  var TRACK_LABELS = { AI_ML: "AI / machine learning", SYSTEMS: "Systems and infrastructure", SOFTWARE: "Software and web" };
+
+  var data = null;            // {catalog, programs, students}
+  var courses = {};           // id -> course
+  var groupNames = {};        // group id -> name
+  var state = { completed: new Set(), track: "AI_ML", year: 2027, season: "W1", terms: 6, cap: 15, sample: null };
+  var worker = null, workerReady = false, pending = null, seq = 0, timer = null, animateNext = true;
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, attrs, children) {
+    var n = document.createElement(tag);
+    for (var k in attrs || {}) {
+      if (k === "class") n.className = attrs[k];
+      else if (k === "style") n.setAttribute("style", attrs[k]);
+      else n.setAttribute(k, attrs[k]);
+    }
+    (children || []).forEach(function (c) { if (c != null) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function dept(id) { return id.split(" ")[0]; }
+  function months(year, season) { return season === "W1" ? "Sep–Dec " + year : "Jan–Apr " + (year + 1); }
+  function plural(n, word) { return n + " " + word + (n === 1 ? "" : "s"); }
+
+  // ---- engine worker ----
+  function startWorker() {
+    workerReady = false;
+    worker = new Worker("worker.js");
+    worker.onmessage = function (e) {
+      var m = e.data;
+      if (m.ready) { workerReady = true; schedule(0); return; }
+      if (m.loadError) { showProblem("The planning engine couldn't load (" + m.loadError + "). Try reloading the page."); return; }
+      if (!pending || m.id !== pending.id) return; // a newer request replaced this one
+      clearTimeout(pending.timeout);
+      var req = pending; pending = null;
+      render(JSON.parse(m.result), req, m.ms);
+    };
+  }
+
+  function schedule(delay) {
+    clearTimeout(timer);
+    timer = setTimeout(run, delay);
+  }
+
+  function run() {
+    if (!workerReady) return;
+    if (pending) clearTimeout(pending.timeout);
+    var student = {
+      id: "YOU", name: "You", track: state.track,
+      completed: Object.keys(courses).filter(function (id) { return state.completed.has(id); }),
+      start_term: { year: state.year, season: state.season },
+      num_terms: state.terms, max_credits_per_term: state.cap
+    };
+    var req = { id: ++seq, student: student };
+    req.timeout = setTimeout(function () {
+      if (pending !== req) return;
+      pending = null;
+      worker.terminate();
+      startWorker();
+      showProblem("This one took longer than " + TIMEOUT_MS / 1000 + " seconds, so it was stopped. Try fewer terms or a different credit limit.");
+    }, TIMEOUT_MS);
+    pending = req;
+    $("status-text") && ($("status-text").textContent = "Planning…");
+    worker.postMessage({ id: req.id, snapshot: JSON.stringify({ catalog: data.catalog, programs: data.programs, student: student }) });
+  }
+
+  // ---- form ----
+  function buildForm() {
+    var samples = $("samples");
+    data.students.forEach(function (s) {
+      var parts = s.name.split(" — ");
+      var b = el("button", { type: "button", class: "sample", "aria-pressed": "false", title: parts[1] || "" }, [parts[0]]);
+      b.dataset.id = s.id;
+      b.addEventListener("click", function () { loadSample(s); });
+      samples.appendChild(b);
+    });
+
+    var byYear = {};
+    data.catalog.courses.forEach(function (c) {
+      var y = c.id.split(" ")[1].charAt(0);
+      (byYear[y] = byYear[y] || []).push(c);
+    });
+    var years = $("years");
+    Object.keys(byYear).sort().forEach(function (y) {
+      var chips = el("div", { class: "chips" });
+      byYear[y].sort(function (a, b) { return a.id < b.id ? -1 : 1; }).forEach(function (c) {
+        var chip = el("button", {
+          type: "button", class: "chip " + dept(c.id), "aria-pressed": "false",
+          title: c.id + ": " + c.title + " (" + c.credits + " credits)",
+          "aria-label": c.id + ", " + c.title + ", " + c.credits + " credits"
+        }, [c.id, el("small", {}, [c.credits + "cr"])]);
+        chip.dataset.id = c.id;
+        chip.addEventListener("click", function () {
+          if (state.completed.has(c.id)) state.completed.delete(c.id); else state.completed.add(c.id);
+          changed();
+        });
+        chips.appendChild(chip);
+      });
+      years.appendChild(el("div", { class: "year" }, [el("span", {}, ["Year " + y]), chips]));
+    });
+
+    var tracks = $("tracks");
+    data.programs.tracks.forEach(function (t) {
+      var core = [];
+      t.groups.forEach(function (g) { if (g.rule === "ALL") core = core.concat(g.courses); });
+      var input = el("input", { type: "radio", name: "track", value: t.id });
+      input.addEventListener("change", function () { state.track = t.id; changed(); });
+      tracks.appendChild(el("label", { class: "track" }, [
+        input, el("b", {}, [TRACK_LABELS[t.id] || t.name]),
+        el("small", {}, ["Requires " + core.join(", ") + ", plus electives from the track"])
+      ]));
+    });
+
+    var start = $("start");
+    for (var y = 2026; y <= 2030; y++) {
+      ["W1", "W2"].forEach(function (s) {
+        start.appendChild(el("option", { value: y + " " + s }, [y + " " + s + " (" + months(y, s) + ")"]));
+      });
+    }
+    start.addEventListener("change", function () {
+      var p = start.value.split(" ");
+      state.year = +p[0]; state.season = p[1]; changed();
+    });
+    numberField($("terms"), 1, 12, "terms");
+    numberField($("cap"), 3, 18, "cap");
+
+    $("clear").addEventListener("click", function () { state.completed.clear(); changed(); });
+    $("form").addEventListener("submit", function (e) { e.preventDefault(); });
+  }
+
+  function numberField(input, min, max, key) {
+    input.addEventListener("input", function () {
+      var v = parseInt(input.value, 10);
+      if (isNaN(v)) return;
+      state[key] = Math.max(min, Math.min(max, v));
+      changed();
+    });
+    input.addEventListener("blur", function () { input.value = state[key]; });
+  }
+
+  function syncForm() {
+    document.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", String(state.completed.has(c.dataset.id))); });
+    document.querySelectorAll(".sample").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.id === state.sample)); });
+    document.querySelectorAll('input[name="track"]').forEach(function (r) { r.checked = r.value === state.track; });
+    $("start").value = state.year + " " + state.season;
+    if (document.activeElement !== $("terms")) $("terms").value = state.terms;
+    if (document.activeElement !== $("cap")) $("cap").value = state.cap;
+  }
+
+  function changed() {
+    state.sample = null;
+    syncForm();
+    schedule(120);
+  }
+
+  function loadSample(s) {
+    state.completed = new Set(s.completed);
+    state.track = s.track;
+    state.year = s.start_term.year;
+    state.season = s.start_term.season;
+    state.terms = s.num_terms;
+    state.cap = s.max_credits_per_term;
+    state.sample = s.id;
+    syncForm();
+    animateNext = true;
+    schedule(0);
+  }
+
+  // ---- result ----
+  function showProblem(text) {
+    var box = $("result");
+    box.setAttribute("aria-busy", "false");
+    box.replaceChildren(el("div", { class: "loading" }, [el("p", {}, [text])]));
+  }
+
+  function render(out, req, ms) {
+    var box = $("result");
+    box.setAttribute("aria-busy", "false");
+    if (out.input_error) { showProblem("The engine rejected the input: " + out.input_error); return; }
+    var plan = out.plan, s = req.student, nodes = [];
+
+    nodes.push(el("div", { class: "status" }, [
+      el("span", { id: "status-text" }, [state.sample ? "Sample: " + sampleName(state.sample) : "Your settings"]),
+      el("span", {}, [plural(s.completed.length, "course") + " finished"])
+    ]));
+
+    if (plan.feasible) {
+      var total = 0, used = plan.terms.length;
+      plan.terms.forEach(function (t) { total += t.credits; });
+      var first = plan.terms[0], last = plan.terms[used - 1];
+      nodes.push(el("h2", { class: "headline" }, ["Done in " + plural(used, "term")]));
+      nodes.push(el("p", { class: "sub" }, [
+        first.year + " " + first.season + " to " + last.year + " " + last.season + ", " + total + " credits in total" +
+        (used < s.num_terms ? ", with " + plural(s.num_terms - used, "term") + " to spare." : ".")
+      ]));
+      var checks = el("ul", { class: "checks" });
+      if (out.violations.length === 0) {
+        checks.appendChild(el("li", { class: "ok" }, ["Checked: every prerequisite is taken first, every course is in a term it's offered, and no term goes over " + s.max_credits_per_term + " credits."]));
+      } else {
+        checks.appendChild(el("li", { class: "bad" }, ["The verifier found a problem with this plan: " + out.violations.join("; ")]));
+      }
+      if (out.min_terms_proven) {
+        checks.appendChild(el("li", { class: "ok" }, ["No plan finishes in fewer terms."]));
+      } else if (out.used_fallback) {
+        checks.appendChild(el("li", { class: "warn" }, ["There are too many elective combinations to compare them all, so a plan with fewer terms might exist."]));
+      } else {
+        checks.appendChild(el("li", { class: "warn" }, ["The search hit its limit before confirming this is the shortest plan."]));
+      }
+      nodes.push(checks);
+      nodes.push(board(plan, s));
+      nodes.push(legend());
+      nodes.push(picked(plan, s));
+    } else {
+      nodes.push(el("h2", { class: "headline" }, ["Can't finish with these settings"]));
+      nodes.push(el("p", { class: "sub" }, [
+        "Not within " + plural(s.num_terms, "term") + " at " + s.max_credits_per_term + " credits per term, starting " +
+        s.start_term.year + " " + s.start_term.season + "."
+      ]));
+      var reasons = el("ul", { class: "reasons" });
+      plan.errors.forEach(function (e) { reasons.appendChild(el("li", {}, [e.message])); });
+      nodes.push(reasons);
+      var fixes = el("div", { class: "fixes" });
+      if (s.num_terms < 12) fixes.appendChild(fixButton("Add a term", function () { state.terms += 1; }));
+      if (s.max_credits_per_term < 18) {
+        var more = Math.min(18, s.max_credits_per_term + 3);
+        fixes.appendChild(fixButton("Allow " + more + " credits per term", function () { state.cap = more; }));
+      }
+      nodes.push(fixes);
+    }
+
+    nodes.push(el("p", { class: "foot" }, [
+      "Planned in " + (ms < 1 ? "under 1" : Math.round(ms)) + " ms by the Go engine running in your browser. It compared " +
+      plural(out.candidates, "elective combination") + "."
+    ]));
+    box.replaceChildren.apply(box, nodes);
+    animateNext = false;
+    $("peek-text").textContent = plan.feasible ? "Done in " + plural(plan.terms.length, "term") : "Can't finish yet";
+    updatePeek();
+  }
+
+  function fixButton(label, apply) {
+    var b = el("button", { type: "button", class: "btn quiet" }, [label]);
+    b.addEventListener("click", function () { apply(); changed(); });
+    return b;
+  }
+
+  function sampleName(id) {
+    var s = data.students.filter(function (x) { return x.id === id; })[0];
+    return s ? s.name.split(" — ")[0] : id;
+  }
+
+  function board(plan, s) {
+    var list = el("ol", { class: "board" + (animateNext ? " animate" : ""), "aria-label": "Plan by term" });
+    plan.terms.forEach(function (t, i) {
+      var lane = el("div", { class: "lane", style: "--cap:" + s.max_credits_per_term });
+      var spoken = [];
+      t.courses.forEach(function (cid, j) {
+        var c = courses[cid];
+        var num = cid.split(" ")[1];
+        spoken.push(cid + " " + c.title);
+        lane.appendChild(el("div", {
+          class: "block " + dept(cid), title: cid + ": " + c.title + " (" + c.credits + " credits)",
+          style: "--cr:" + c.credits + ";--n:" + t.courses.length + ";--d:" + (i * 70 + j * 35) + "ms", "aria-hidden": "true"
+        }, [el("span", {}, [dept(cid)]), el("b", {}, [num]), el("small", {}, [c.credits + " cr"])]));
+      });
+      if (t.courses.length === 0) lane.appendChild(el("span", { class: "empty-lane" }, ["Nothing needed this term"]));
+      list.appendChild(el("li", { class: "term" }, [
+        el("div", { class: "when" }, [el("b", {}, [t.year + " " + t.season]), el("small", {}, [months(t.year, t.season)])]),
+        lane,
+        el("div", { class: "load", "aria-hidden": "true" }, [el("b", {}, [String(t.credits)]), "/" + s.max_credits_per_term]),
+        el("span", { class: "sr" }, [t.credits + " credits: " + (spoken.join(", ") || "no courses")])
+      ]));
+    });
+    return list;
+  }
+
+  function legend() {
+    return el("ul", { class: "legend", "aria-hidden": "true" }, [
+      el("li", {}, [el("i", {}), "Computer science"]),
+      el("li", {}, [el("i", { class: "MATH" }), "Math"]),
+      el("li", {}, [el("i", { class: "STAT" }), "Statistics"]),
+      el("li", {}, ["Block width = credits; dashed box = your limit"])
+    ]);
+  }
+
+  function picked(plan, s) {
+    var wrap = el("div", { class: "picked" }, [el("h3", {}, ["Electives picked for you"])]);
+    var any = false;
+    Object.keys(plan.chosen).forEach(function (gid) {
+      var ids = plan.chosen[gid];
+      if (!ids.length) return;
+      any = true;
+      var names = ids.map(function (id) { return s.completed.indexOf(id) >= 0 ? id + " (finished)" : id; });
+      wrap.appendChild(el("p", {}, [el("span", { class: "group" }, [groupNames[gid] || gid]), ": " + names.join(", ")]));
+    });
+    if (!any) wrap.appendChild(el("p", {}, ["None needed."]));
+    return wrap;
+  }
+
+  // ---- phone summary bar: shown while the result panel is off screen ----
+  var resultVisible = true, peekReady = false;
+  function updatePeek() { $("peek").hidden = resultVisible || !peekReady; }
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (entries) {
+      resultVisible = entries[0].isIntersecting;
+      updatePeek();
+    }).observe($("result"));
+  }
+  $("peek-btn").addEventListener("click", function () { $("result").scrollIntoView({ behavior: "smooth", block: "start" }); });
+  // only after someone starts using the form, so it doesn't cover the intro on first load
+  $("form").addEventListener("click", function () { peekReady = true; updatePeek(); });
+
+  // ---- start ----
+  Promise.all(["catalog", "programs", "students"].map(function (n) {
+    return fetch("data/" + n + ".json").then(function (r) {
+      if (!r.ok) throw new Error(n + ".json: HTTP " + r.status);
+      return r.json();
+    });
+  })).then(function (res) {
+    data = { catalog: res[0], programs: res[1], students: res[2].students };
+    data.catalog.courses.forEach(function (c) { courses[c.id] = c; });
+    data.programs.degree.groups.forEach(function (g) { groupNames[g.id] = g.name; });
+    data.programs.tracks.forEach(function (t) { t.groups.forEach(function (g) { groupNames[g.id] = g.name; }); });
+    buildForm();
+    var first = data.students.filter(function (s) { return s.id === "U3"; })[0] || data.students[0];
+    loadSample(first);
+    startWorker();
+  }).catch(function (e) {
+    showProblem("The course data couldn't load (" + e.message + "). Try reloading the page.");
+  });
+})();
+</script>
+</body>
+</html>
