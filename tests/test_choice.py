@@ -100,7 +100,7 @@ class PickNTest(EngineTestCase, unittest.TestCase):
         errs = res.plan["errors"]
         self.assertEqual(codes(errs), ["E_NOT_OFFERED", "E_INFEASIBLE"])
         self.assertEqual(errs[0]["courses"], ["E1"])  # the one with fewer unplaced credits is the representative
-        self.assertIn("2개 모두 실패", errs[1]["message"])
+        self.assertIn("All 2 PICK_N/OR combinations failed", errs[1]["message"])
         self.assertIn("P=[E1]", errs[1]["message"])
 
     def test_one_combination_feasible_others_not(self):

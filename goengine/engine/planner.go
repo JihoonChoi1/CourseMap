@@ -40,7 +40,7 @@ func MakeCalendar(catalog *Catalog, student *Student) *Calendar {
 		}
 	}
 	if startIdx < 0 {
-		panic("start_season이 seasons에 없음 (ParseStudent를 통과했다면 발생하지 않음)")
+		panic("start_season is not in seasons (cannot happen after ParseStudent)")
 	}
 	return &Calendar{Seasons: catalog.Seasons, StartYear: student.StartYear, StartIdx: startIdx, NumTerms: student.NumTerms}
 }
@@ -62,7 +62,7 @@ func PlanStudent(catalog *Catalog, programs *Programs, static *StaticResult, stu
 		}
 	}
 	if track == nil {
-		return infeasible(student, []EngineError{{"E_UNKNOWN_TRACK", student.ID + ": 트랙 '" + student.Track + "' 없음", []string{}}})
+		return infeasible(student, []EngineError{{"E_UNKNOWN_TRACK", student.ID + ": unknown track '" + student.Track + "'", []string{}}})
 	}
 
 	completed := map[string]bool{}
@@ -75,7 +75,7 @@ func PlanStudent(catalog *Catalog, programs *Programs, static *StaticResult, stu
 	}
 	if len(unknown) > 0 {
 		return infeasible(student, []EngineError{{
-			"E_UNKNOWN_REF", student.ID + ": completed에 없는 과목 " + strings.Join(unknown, ", "), unknown}})
+			"E_UNKNOWN_REF", student.ID + ": completed lists unknown courses: " + strings.Join(unknown, ", "), unknown}})
 	}
 
 	cal := MakeCalendar(catalog, student)
@@ -122,7 +122,7 @@ func PlanStudent(catalog *Catalog, programs *Programs, static *StaticResult, stu
 		if len(candidates) > 1 {
 			errs = append(errs, EngineError{
 				"E_INFEASIBLE",
-				"PICK_N/OR 선택 조합 " + itoa(len(candidates)) + "개 모두 실패. 위 원인은 가장 근접한 조합 기준: " +
+				"All " + itoa(len(candidates)) + " PICK_N/OR combinations failed. The cause above is for the closest one: " +
 					picksLabel(best.Picks),
 				[]string{},
 			})
@@ -131,15 +131,15 @@ func PlanStudent(catalog *Catalog, programs *Programs, static *StaticResult, stu
 		if unproven > 0 && bestRes.Proven {
 			errs = append(errs, EngineError{
 				"E_INFEASIBLE",
-				"주의: 조합 " + itoa(unproven) + "개는 전수탐색 한도를 넘어 판정하지 못함 — 불가능이 증명된 것은 아님",
+				"Note: " + itoa(unproven) + " combinations hit the exhaustive-search limit and were left undecided — infeasibility is not proven",
 				[]string{},
 			})
 		}
 		if usedFallback {
 			errs = append(errs, EngineError{
 				"E_INFEASIBLE",
-				"주의: PICK_N/OR 선택 조합이 " + itoa(limits.MaxCandidates) + "개를 넘어 비용 기준 조합 1개만 시도함 " +
-					"— 다른 조합으로는 가능할 수 있으므로 불가능이 증명된 것은 아님",
+				"Note: there are more than " + itoa(limits.MaxCandidates) + " PICK_N/OR combinations, so only the cheapest one was tried " +
+					"— another combination might work, so infeasibility is not proven",
 				[]string{},
 			})
 		}
@@ -188,7 +188,7 @@ func picksLabel(picks OrderedLists) string {
 		parts = append(parts, gid+"=["+strings.Join(picks.Vals[i], ", ")+"]")
 	}
 	if len(parts) == 0 {
-		return "(선택 없음)"
+		return "(no choices)"
 	}
 	return strings.Join(parts, ", ")
 }

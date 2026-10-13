@@ -54,8 +54,8 @@ class ScenarioTest(EngineTestCase, unittest.TestCase):
         first = res.plan["errors"][0]
         self.assertEqual(sorted(first["courses"]), ["CS371", "CS490"])
         self.assertIn("2028 SPRING", first["message"])
-        self.assertIn("최소 학기 상한은 7", first["message"])
-        self.assertIn("2개 모두 실패", res.plan["errors"][-1]["message"])
+        self.assertIn("per-term cap of at least 7", first["message"])
+        self.assertIn("All 2 PICK_N/OR combinations failed", res.plan["errors"][-1]["message"])
 
     def test_S3_feasible_with_cap_7(self):
         res = self.plan(self.cat, self.progs, self.student("S3", max_credits=7))

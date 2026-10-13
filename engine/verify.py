@@ -10,7 +10,7 @@ from engine.model import Catalog, Programs, Student
 def verify_plan(catalog: Catalog, programs: Programs, student: Student, plan: dict) -> list[str]:
     v = []
     if not plan.get("feasible", False):
-        return ["feasible=false인 plan은 검증 대상이 아님"]
+        return ["a plan with feasible=false is not verified"]
 
     completed = {}
     for cid in student.completed:
@@ -19,7 +19,7 @@ def verify_plan(catalog: Catalog, programs: Programs, student: Student, plan: di
     # Term order/labels, credit totals, cap
     terms = plan["terms"]
     if len(terms) > student.num_terms:
-        v.append("학기 수 " + str(len(terms)) + " > num_terms " + str(student.num_terms))
+        v.append("term count " + str(len(terms)) + " > num_terms " + str(student.num_terms))
     p = len(catalog.seasons)
     start_idx = catalog.seasons.index(student.start_season)
     term_of = {}
@@ -28,25 +28,25 @@ def verify_plan(catalog: Catalog, programs: Programs, student: Student, plan: di
         exp_year = student.start_year + idx // p
         exp_season = catalog.seasons[idx % p]
         if term["year"] != exp_year or term["season"] != exp_season:
-            v.append("학기 " + str(t) + ": " + str(term["year"]) + " " + term["season"] + " (기대 "
+            v.append("term " + str(t) + ": " + str(term["year"]) + " " + term["season"] + " (expected "
                      + str(exp_year) + " " + exp_season + ")")
         total = 0
         for cid in term["courses"]:
             if cid not in catalog.by_id:
-                v.append(cid + ": 카탈로그에 없는 과목")
+                v.append(cid + ": not in the catalog")
                 continue
             if cid in term_of:
-                v.append(cid + ": 중복 배치")
+                v.append(cid + ": placed more than once")
             if completed.get(cid, False):
-                v.append(cid + ": 이미 이수한 과목을 배치")
+                v.append(cid + ": already completed but placed again")
             term_of[cid] = t
             total += catalog.by_id[cid].credits
             if term["season"] not in catalog.by_id[cid].offered:
-                v.append(cid + ": " + term["season"] + " 미개설")
+                v.append(cid + ": " + term["season"] + " not offered")
         if total != term["credits"]:
-            v.append("학기 " + str(t) + ": credits 필드 " + str(term["credits"]) + " != 실제 " + str(total))
+            v.append("term " + str(t) + ": credits field " + str(term["credits"]) + " != actual " + str(total))
         if total > student.max_credits:
-            v.append("학기 " + str(t) + ": " + str(total) + "학점 > 상한 " + str(student.max_credits))
+            v.append("term " + str(t) + ": " + str(total) + " credits > cap " + str(student.max_credits))
 
     # prereq (strictly before) / coreq (same term or before)
     for cid in term_of:
@@ -63,7 +63,7 @@ def verify_plan(catalog: Catalog, programs: Programs, student: Student, plan: di
                             ok = True
                 if not ok:
                     kind = "prereq" if strict else "coreq"
-                    v.append(cid + ": " + kind + " [" + " | ".join(clause) + "] 미충족")
+                    v.append(cid + ": " + kind + " [" + " | ".join(clause) + "] not satisfied")
 
     # Degree requirements + track groups
     track = None
@@ -71,7 +71,7 @@ def verify_plan(catalog: Catalog, programs: Programs, student: Student, plan: di
         if tr.id == student.track:
             track = tr
     if track is None:
-        v.append("트랙 없음: " + student.track)
+        v.append("unknown track: " + student.track)
         return v
     for g in programs.degree.groups + track.groups:
         have = 0
@@ -80,12 +80,12 @@ def verify_plan(catalog: Catalog, programs: Programs, student: Student, plan: di
                 have += 1
         need = len(g.courses) if g.rule == "ALL" else g.n
         if have < need:
-            v.append("그룹 " + g.id + ": " + str(have) + "/" + str(need) + " 충족")
+            v.append("group " + g.id + ": " + str(have) + "/" + str(need) + " satisfied")
         if g.rule == "PICK_N":
             chosen = plan["chosen"].get(g.id, [])
             for cid in chosen:
                 if cid not in g.courses or not (completed.get(cid, False) or cid in term_of):
-                    v.append("chosen." + g.id + ": " + cid + "는 그룹 과목이 아니거나 이수/배치되지 않음")
+                    v.append("chosen." + g.id + ": " + cid + " is not in the group, or is neither completed nor placed")
             if len(chosen) < g.n:
-                v.append("chosen." + g.id + ": " + str(len(chosen)) + "개 < n=" + str(g.n))
+                v.append("chosen." + g.id + ": " + str(len(chosen)) + " chosen < n=" + str(g.n))
     return v

@@ -100,7 +100,7 @@ class CoreqTest(EngineTestCase, unittest.TestCase):
         errs = res.plan["errors"]
         self.assertEqual(codes(errs), ["E_BUNDLE_OVER_CAP"])
         self.assertEqual(errs[0]["courses"], ["LEC", "LAB"])
-        self.assertIn("6학점", errs[0]["message"])
+        self.assertIn("6 credits", errs[0]["message"])
 
     def test_bundle_under_cap_but_members_individually_fit(self):
         # each course is within the cap on its own, but if the sum exceeds it it's E_BUNDLE_OVER_CAP, not E_COURSE_OVER_CAP

@@ -10,7 +10,7 @@ import "strings"
 func VerifyPlan(catalog *Catalog, programs *Programs, student *Student, plan Plan) []string {
 	v := []string{}
 	if !plan.Feasible {
-		return []string{"feasible=false인 plan은 검증 대상이 아님"}
+		return []string{"a plan with feasible=false is not verified"}
 	}
 
 	completed := map[string]bool{}
@@ -21,7 +21,7 @@ func VerifyPlan(catalog *Catalog, programs *Programs, student *Student, plan Pla
 	// term order/labels, credit sums, cap
 	terms := plan.Terms
 	if len(terms) > student.NumTerms {
-		v = append(v, "학기 수 "+itoa(len(terms))+" > num_terms "+itoa(student.NumTerms))
+		v = append(v, "term count "+itoa(len(terms))+" > num_terms "+itoa(student.NumTerms))
 	}
 	p := len(catalog.Seasons)
 	startIdx := -1
@@ -39,34 +39,34 @@ func VerifyPlan(catalog *Catalog, programs *Programs, student *Student, plan Pla
 		expYear := student.StartYear + pyFloorDiv(idx, p)
 		expSeason := catalog.Seasons[pyMod(idx, p)]
 		if term.Year != expYear || term.Season != expSeason {
-			v = append(v, "학기 "+itoa(t)+": "+itoa(term.Year)+" "+term.Season+" (기대 "+itoa(expYear)+" "+expSeason+")")
+			v = append(v, "term "+itoa(t)+": "+itoa(term.Year)+" "+term.Season+" (expected "+itoa(expYear)+" "+expSeason+")")
 		}
 		total := 0
 		for _, cid := range term.Courses {
 			c, ok := catalog.ByID[cid]
 			if !ok {
-				v = append(v, cid+": 카탈로그에 없는 과목")
+				v = append(v, cid+": not in the catalog")
 				continue
 			}
 			if _, dup := termOf[cid]; dup {
-				v = append(v, cid+": 중복 배치")
+				v = append(v, cid+": placed more than once")
 			} else {
 				termOrder = append(termOrder, cid)
 			}
 			if completed[cid] {
-				v = append(v, cid+": 이미 이수한 과목을 배치")
+				v = append(v, cid+": already completed but placed again")
 			}
 			termOf[cid] = t
 			total += c.Credits
 			if !contains(c.Offered, term.Season) {
-				v = append(v, cid+": "+term.Season+" 미개설")
+				v = append(v, cid+": "+term.Season+" not offered")
 			}
 		}
 		if total != term.Credits {
-			v = append(v, "학기 "+itoa(t)+": credits 필드 "+itoa(term.Credits)+" != 실제 "+itoa(total))
+			v = append(v, "term "+itoa(t)+": credits field "+itoa(term.Credits)+" != actual "+itoa(total))
 		}
 		if total > student.MaxCredits {
-			v = append(v, "학기 "+itoa(t)+": "+itoa(total)+"학점 > 상한 "+itoa(student.MaxCredits))
+			v = append(v, "term "+itoa(t)+": "+itoa(total)+" credits > cap "+itoa(student.MaxCredits))
 		}
 	}
 
@@ -92,7 +92,7 @@ func VerifyPlan(catalog *Catalog, programs *Programs, student *Student, plan Pla
 					if strict {
 						kind = "prereq"
 					}
-					v = append(v, cid+": "+kind+" ["+strings.Join(clause, " | ")+"] 미충족")
+					v = append(v, cid+": "+kind+" ["+strings.Join(clause, " | ")+"] not satisfied")
 				}
 			}
 		}
@@ -106,7 +106,7 @@ func VerifyPlan(catalog *Catalog, programs *Programs, student *Student, plan Pla
 		}
 	}
 	if track == nil {
-		v = append(v, "트랙 없음: "+student.Track)
+		v = append(v, "unknown track: "+student.Track)
 		return v
 	}
 	groups := append(append([]Group{}, programs.Degree.Groups...), track.Groups...)
@@ -123,18 +123,18 @@ func VerifyPlan(catalog *Catalog, programs *Programs, student *Student, plan Pla
 			need = len(g.Courses)
 		}
 		if have < need {
-			v = append(v, "그룹 "+g.ID+": "+itoa(have)+"/"+itoa(need)+" 충족")
+			v = append(v, "group "+g.ID+": "+itoa(have)+"/"+itoa(need)+" satisfied")
 		}
 		if g.Rule == "PICK_N" {
 			chosen, _ := plan.Chosen.Get(g.ID)
 			for _, cid := range chosen {
 				_, placed := termOf[cid]
 				if !contains(g.Courses, cid) || !(completed[cid] || placed) {
-					v = append(v, "chosen."+g.ID+": "+cid+"는 그룹 과목이 아니거나 이수/배치되지 않음")
+					v = append(v, "chosen."+g.ID+": "+cid+" is not in the group, or is neither completed nor placed")
 				}
 			}
 			if len(chosen) < g.N {
-				v = append(v, "chosen."+g.ID+": "+itoa(len(chosen))+"개 < n="+itoa(g.N))
+				v = append(v, "chosen."+g.ID+": "+itoa(len(chosen))+" chosen < n="+itoa(g.N))
 			}
 		}
 	}

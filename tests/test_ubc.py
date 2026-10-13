@@ -34,7 +34,7 @@ def groups_of(progs, s):
 
 
 def unproven(plan) -> bool:
-    return any("증명된 것은 아님" in e["message"] for e in plan["errors"])
+    return any("is not proven" in e["message"] for e in plan["errors"])
 
 
 class UbcDataTest(unittest.TestCase):

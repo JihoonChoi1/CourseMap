@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": "UBC Vancouver Academic Calendar 2026/27 + 학과 시간표 2025W/2026W, 조회 2026-09-27. 과목별 원문과 변환 기록: SOURCES.md",
+  "source": "UBC Vancouver Academic Calendar 2026/27 + department timetables 2025W/2026W, accessed 2026-09-27. Per-course source text and conversion notes: SOURCES.md",
   "seasons": ["W1", "W2"],
   "courses": [
     {"id": "CPSC 110", "title": "Computation, Programs, and Programming", "credits": 4, "offered": ["W1", "W2"], "prereqs": [], "coreqs": []},

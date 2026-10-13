@@ -28,10 +28,10 @@ class Command(BaseCommand):
             try:
                 key = uuid.UUID(options["job_id"])
             except ValueError:
-                raise CommandError("job id 형식 오류: " + options["job_id"])
+                raise CommandError("malformed job id: " + options["job_id"])
             qs = qs.filter(id=key)
             if not qs.exists():
-                raise CommandError("SUCCESS job 없음: " + options["job_id"])
+                raise CommandError("no SUCCESS job: " + options["job_id"])
         elif not options["all"]:
             qs = qs.exclude(export_status=PlanJob.EXPORT_SUCCESS)
         ok = 0
@@ -42,7 +42,7 @@ class Command(BaseCommand):
             else:
                 failed += 1
                 err = PlanJob.objects.values_list("export_error", flat=True).get(id=job_id)
-                self.stderr.write("실패: " + str(job_id) + ": " + str(err))
-        self.stdout.write("export 완료: 성공 " + str(ok) + "개, 실패 " + str(failed) + "개")
+                self.stderr.write("failed: " + str(job_id) + ": " + str(err))
+        self.stdout.write("export done: " + str(ok) + " succeeded, " + str(failed) + " failed")
         if failed > 0:
-            raise CommandError("export 실패 " + str(failed) + "개")
+            raise CommandError("export failed for " + str(failed) + " job(s)")

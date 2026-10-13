@@ -1,8 +1,8 @@
-# 로컬 개발/테스트용 MySQL + Redis + S3 호환 스토리지. Django 테스트는 같은 MySQL 서버에 test_coursemap DB를 만들어 쓴다.
-# Redis는 Celery 브로커로만 쓴다 (결과는 MySQL PlanJob 테이블에 저장).
-# s3 (Phase 6): Plan export 대상. MinIO 공식 이미지를 더 이상 받을 수 없어 S3 호환 서버 RustFS를 쓴다.
-#   접속 키는 이 컨테이너 전용 로컬 개발 값이다 (MySQL 비밀번호와 같은 취급). 실제 AWS 키는 여기 두지 않는다.
-#   버킷 생성: .venv/bin/python manage.py ensure_s3_bucket
+# MySQL + Redis + S3-compatible storage for local development and tests. Django tests create a test_coursemap DB on the same MySQL server.
+# Redis is only the Celery broker (results are stored in MySQL's PlanJob table).
+# s3: target for plan exports. The official MinIO images can no longer be pulled, so this uses RustFS, an S3-compatible server.
+#   The access keys are local development values for this container only (same as the MySQL password). Never put real AWS keys here.
+#   Create the bucket: .venv/bin/python manage.py ensure_s3_bucket
 services:
   mysql:
     image: mysql:8.4

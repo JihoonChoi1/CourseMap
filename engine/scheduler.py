@@ -134,21 +134,21 @@ def _precheck(g: UnitGraph, cal: Calendar, cap: int, es: list[int], crit: list[i
             for cid in unit.courses:
                 errors.append(EngineError(
                     "E_NOT_OFFERED",
-                    cid + ": " + "/".join(unit.offered) + " 개설 과목인데 남은 학기(" + ", ".join(horizon_labels)
-                    + ")에 해당 학기가 없음",
+                    cid + ": " + "/".join(unit.offered) + " only, but the remaining terms (" + ", ".join(horizon_labels)
+                    + ") include none of them",
                     [cid],
                 ))
         if unit.credits > cap:
             if len(unit.courses) > 1:
                 errors.append(EngineError(
                     "E_BUNDLE_OVER_CAP",
-                    "번들 {" + ", ".join(unit.courses) + "} 합계 " + str(unit.credits) + "학점 > 학기 상한 " + str(cap),
+                    "Bundle {" + ", ".join(unit.courses) + "} totals " + str(unit.credits) + " credits > per-term cap " + str(cap),
                     list(unit.courses),
                 ))
             else:
                 errors.append(EngineError(
                     "E_COURSE_OVER_CAP",
-                    unit.id + ": " + str(unit.credits) + "학점 > 학기 상한 " + str(cap),
+                    unit.id + ": " + str(unit.credits) + " credits > per-term cap " + str(cap),
                     list(unit.courses),
                 ))
     if len(errors) > 0:
@@ -169,8 +169,8 @@ def _precheck(g: UnitGraph, cal: Calendar, cap: int, es: list[int], crit: list[i
         chain.reverse()
         errors.append(EngineError(
             "E_INFEASIBLE",
-            unit.id + ": 선수과목 체인과 개설 학기상 빨라야 " + term_label(cal, es[u]) + "에 수강 가능하지만 계획은 "
-            + term_label(cal, last) + "까지. 최단 체인: " + " → ".join(chain),
+            unit.id + ": the prerequisite chain and term offerings make it available no earlier than " + term_label(cal, es[u]) + ", but the plan ends in "
+            + term_label(cal, last) + ". Shortest chain: " + " → ".join(chain),
             list(unit.courses),
         ))
     if len(errors) > 0:
@@ -227,24 +227,25 @@ def _precheck(g: UnitGraph, cal: Calendar, cap: int, es: list[int], crit: list[i
                 courses.append(cid)
         span = b - a + 1
         if a == b:
-            where = term_label(cal, a) + "에 반드시 배치해야 하는 과목"
+            where = "courses that must be placed in " + term_label(cal, a)
         else:
-            where = term_label(cal, a) + " ~ " + term_label(cal, b) + " (" + str(span) + "학기) 안에 반드시 배치해야 하는 과목"
+            where = ("courses that must be placed within " + term_label(cal, a) + " ~ " + term_label(cal, b) + " ("
+                     + str(span) + " terms)")
         if best[2] > cap * span:  # if simply "number of terms × cap" already explains it, that's more readable
-            limit = "학기 상한 " + str(cap) if span == 1 else str(span) + "학기 × 상한 " + str(cap) + " = " + str(supply)
+            limit = "per-term cap " + str(cap) if span == 1 else str(span) + " terms × cap " + str(cap) + " = " + str(supply)
         else:
             fills = []
             for t in range(a, b + 1):
                 fills.append(str(fill[t]))
-            limit = ("채울 수 있는 최대 " + str(supply) + "학점 (과목 학점 조합상 학기별 최대 " + "+".join(fills)
-                     + ", 상한 " + str(cap) + ")")
+            limit = ("at most " + str(supply) + " credits that can actually fit (per-term max given course credit sizes: " + "+".join(fills)
+                     + ", cap " + str(cap) + ")")
         if min_cap > cap:
-            hint = ". 이 선택 조합에 필요한 최소 학기 상한은 " + str(min_cap) + " 이상"
+            hint = ". This combination needs a per-term cap of at least " + str(min_cap)
         else:
-            hint = ". 평균으로는 상한이 충분하지만 과목 학점 조합상 학기마다 상한을 꽉 채울 수 없음"
+            hint = ". The cap is enough on average, but course credit sizes keep the terms from being filled to the cap"
         errors.append(EngineError(
             "E_INFEASIBLE",
-            "학점 부족: " + where + " " + " + ".join(parts) + " = " + str(best[2]) + "학점 > " + limit + hint,
+            "Not enough room: " + where + ": " + " + ".join(parts) + " = " + str(best[2]) + " credits > " + limit + hint,
             courses,
         ))
     return errors
@@ -515,9 +516,9 @@ def _exact_proof_error(g: UnitGraph, cal: Calendar, greedy_term: list[int]) -> E
                 left.append(cid)
     return EngineError(
         "E_INFEASIBLE",
-        "모든 배치 조합을 탐색한 결과 " + term_label(cal, cal.num_terms - 1) + "까지 배치 불가능 "
-        + "(개설 학기·선수과목·학점 상한이 함께 걸려 단순 학점 합계로는 드러나지 않는 경우). "
-        + "그리디 배치 기준으로 남는 과목: " + ", ".join(left),
+        "Exhaustive search found no placement that finishes by " + term_label(cal, cal.num_terms - 1) + " "
+        + "(term offerings, prerequisites, and the credit cap interact in a way credit totals alone don't show). "
+        + "Courses left over by the greedy placement: " + ", ".join(left),
         left,
     )
 
@@ -572,17 +573,17 @@ def _diagnose(g: UnitGraph, catalog: Catalog, cal: Calendar, cap: int, completed
             if season_at(cal, t) in unit.offered:
                 slots.append(term_label(cal, t) + " " + str(load[t]) + "/" + str(cap))
         if len(slots) == 0:
-            msg = (unit.id + ": 선수과목이 " + term_label(cal, ready_from) + "부터 충족되는데 이후 계획 기간 안에 "
-                   + "/".join(unit.offered) + " 학기가 없음")
+            msg = (unit.id + ": prerequisites are met from " + term_label(cal, ready_from) + ", but no "
+                   + "/".join(unit.offered) + " term remains in the plan after that")
         else:
-            msg = (unit.id + "(" + str(unit.credits) + "학점): 선수과목은 " + term_label(cal, ready_from)
-                   + "부터 충족되지만 이후 개설 학기가 모두 학점 상한에 걸림 [" + ", ".join(slots) + "]")
+            msg = (unit.id + "(" + str(unit.credits) + " credits): prerequisites are met from " + term_label(cal, ready_from)
+                   + ", but every later term it is offered in is already at the credit cap [" + ", ".join(slots) + "]")
         details.append(EngineError("E_INFEASIBLE", msg, list(unit.courses)))
 
     summary = EngineError(
         "E_INFEASIBLE",
-        "배치안을 찾지 못함. 미배치: " + ", ".join(unplaced)
-        + ". (전수탐색이 한도 " + str(EXACT_NODE_LIMIT) + "를 넘어 중단되었으므로 불가능이 증명된 것은 아님)",
+        "No placement found. Unplaced: " + ", ".join(unplaced)
+        + ". (Exhaustive search stopped after exceeding its limit of " + str(EXACT_NODE_LIMIT) + " nodes, so infeasibility is not proven)",
         unplaced,
     )
     return [summary] + details

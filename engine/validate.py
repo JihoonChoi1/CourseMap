@@ -31,34 +31,34 @@ def _check_courses(catalog: Catalog, errors: list[EngineError]):
     seen = {}
     for c in catalog.courses:
         if c.id in seen:
-            errors.append(EngineError("E_DUP_ID", "과목 id 중복: " + c.id, [c.id]))
+            errors.append(EngineError("E_DUP_ID", "Duplicate course id: " + c.id, [c.id]))
         seen[c.id] = True
 
         if c.credits <= 0:
-            errors.append(EngineError("E_BAD_CREDITS", c.id + ": credits=" + str(c.credits) + " (0보다 커야 함)", [c.id]))
+            errors.append(EngineError("E_BAD_CREDITS", c.id + ": credits=" + str(c.credits) + " (must be greater than 0)", [c.id]))
 
         if len(c.offered) == 0:
-            errors.append(EngineError("E_BAD_OFFERED", c.id + ": offered가 비어 있음", [c.id]))
+            errors.append(EngineError("E_BAD_OFFERED", c.id + ": offered is empty", [c.id]))
         for s in c.offered:
             if s not in catalog.seasons:
-                errors.append(EngineError("E_BAD_OFFERED", c.id + ": 알 수 없는 season '" + s + "'", [c.id]))
+                errors.append(EngineError("E_BAD_OFFERED", c.id + ": unknown season '" + s + "'", [c.id]))
 
         for kind, clauses in (("prereqs", c.prereqs), ("coreqs", c.coreqs)):
             for clause in clauses:
                 if len(clause) == 0:
-                    errors.append(EngineError("E_EMPTY_CLAUSE", c.id + ": " + kind + "에 빈 OR clause", [c.id]))
+                    errors.append(EngineError("E_EMPTY_CLAUSE", c.id + ": " + kind + " has an empty OR clause", [c.id]))
                 for x in clause:
                     if x == c.id:
-                        errors.append(EngineError("E_SELF_REF", c.id + ": 자기 자신을 " + kind + "로 참조", [c.id]))
+                        errors.append(EngineError("E_SELF_REF", c.id + ": lists itself as its own " + kind, [c.id]))
                     elif x not in catalog.by_id:
-                        errors.append(EngineError("E_UNKNOWN_REF", c.id + ": " + kind + "에 없는 과목 '" + x + "'", [c.id]))
+                        errors.append(EngineError("E_UNKNOWN_REF", c.id + ": " + kind + " references an unknown course '" + x + "'", [c.id]))
 
 
 def _check_programs(catalog: Catalog, programs: Programs, errors: list[EngineError]):
     track_seen = {programs.degree.id: True}
     for t in programs.tracks:
         if t.id in track_seen:
-            errors.append(EngineError("E_DUP_ID", "트랙 id 중복: " + t.id))
+            errors.append(EngineError("E_DUP_ID", "Duplicate track id: " + t.id))
         track_seen[t.id] = True
 
     # Group ids become keys of Plan.chosen, so they must be globally unique across degree + all tracks
@@ -68,18 +68,18 @@ def _check_programs(catalog: Catalog, programs: Programs, errors: list[EngineErr
         for g in p.groups:
             where = p.id + "." + g.id
             if g.id in group_seen:
-                errors.append(EngineError("E_DUP_ID", "그룹 id 중복: " + g.id))
+                errors.append(EngineError("E_DUP_ID", "Duplicate group id: " + g.id))
             group_seen[g.id] = True
 
             if g.rule == "PICK_N":
                 if g.n < 1 or g.n > len(g.courses):
-                    errors.append(EngineError("E_BAD_PICK_N", where + ": n=" + str(g.n) + ", 과목 수=" + str(len(g.courses))))
+                    errors.append(EngineError("E_BAD_PICK_N", where + ": n=" + str(g.n) + ", course count=" + str(len(g.courses))))
             elif g.rule != "ALL":
                 errors.append(EngineError("E_UNKNOWN_RULE", where + ": rule '" + g.rule + "'"))
 
             for cid in g.courses:
                 if cid not in catalog.by_id:
-                    errors.append(EngineError("E_UNKNOWN_REF", where + ": 없는 과목 '" + cid + "'", [cid]))
+                    errors.append(EngineError("E_UNKNOWN_REF", where + ": unknown course '" + cid + "'", [cid]))
 
 
 # ---------------------------------------------------------------------------
@@ -190,8 +190,8 @@ def _check_graph(catalog: Catalog, errors: list[EngineError]) -> list[list[str]]
             path = [strict_from] + _path_within(strict_to, strict_from, members, adj)
             errors.append(EngineError(
                 "E_CYCLE",
-                "순환 의존 (화살표 = 먼저 들어야 함): " + " → ".join(path) + ". " + strict_from + "은(는) "
-                + strict_to + "의 prereq(엄격히 이전)이므로 모순",
+                "Circular dependency (arrow = must be taken first): " + " → ".join(path) + ". " + strict_from + " is a prereq (strictly earlier) of "
+                + strict_to + ", so the cycle is a contradiction",
                 comp,
             ))
             continue
@@ -207,7 +207,7 @@ def _check_graph(catalog: Catalog, errors: list[EngineError]) -> list[list[str]]
             if ok:
                 common.append(s)
         if len(common) == 0:
-            errors.append(EngineError("E_BUNDLE_NO_TERM", "번들 {" + ", ".join(comp) + "}의 공통 개설 학기가 없음", comp))
+            errors.append(EngineError("E_BUNDLE_NO_TERM", "Bundle {" + ", ".join(comp) + "} has no term in which all its courses are offered", comp))
             continue
         bundles.append(comp)
     return bundles

@@ -126,12 +126,12 @@ func main() {
 func runSnapshot() int {
 	data, err := io.ReadAll(os.Stdin)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "stdin 읽기 실패: "+err.Error())
+		fmt.Fprintln(os.Stderr, "failed to read stdin: "+err.Error())
 		return 2
 	}
 	catalog, programs, student, err := parity.ParseSnapshot(data)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "입력 오류: "+err.Error())
+		fmt.Fprintln(os.Stderr, "input error: "+err.Error())
 		return 2
 	}
 	res := engine.PlanStudent(catalog, programs, engine.Validate(catalog, programs), student, engine.DefaultLimits)
@@ -164,7 +164,7 @@ func runBatch(timing bool) int {
 			break
 		}
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "stdin 읽기 실패: "+err.Error())
+			fmt.Fprintln(os.Stderr, "failed to read stdin: "+err.Error())
 			return 2
 		}
 	}
@@ -179,12 +179,12 @@ func runBatch(timing bool) int {
 
 func runCLI(o *options) int {
 	if !o.all && !o.hasStudentID {
-		return usageError("student_id 또는 --all 필요")
+		return usageError("student_id or --all is required")
 	}
 
 	catalog, programs, students, err := engine.LoadAll(o.dataDir)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "입력 오류: "+err.Error())
+		fmt.Fprintln(os.Stderr, "input error: "+err.Error())
 		return 2
 	}
 
@@ -199,7 +199,7 @@ func runCLI(o *options) int {
 		if !o.hasStudentID {
 			shown = "None" // Python str(None)
 		}
-		fmt.Fprintln(os.Stderr, "학생 없음: "+shown)
+		fmt.Fprintln(os.Stderr, "no such student: "+shown)
 		return 2
 	}
 
@@ -214,7 +214,7 @@ func runCLI(o *options) int {
 			s.NumTerms = *o.numTerms
 		}
 		if s.MaxCredits < 1 || s.NumTerms < 1 {
-			fmt.Fprintln(os.Stderr, s.ID+": --max-credits/--num-terms는 1 이상이어야 함")
+			fmt.Fprintln(os.Stderr, s.ID+": --max-credits/--num-terms must be at least 1")
 			return 2
 		}
 
@@ -222,22 +222,22 @@ func runCLI(o *options) int {
 		plans = append(plans, res.Plan.JSON())
 
 		head := "[" + s.ID + "] track=" + s.Track + " cap=" + strconv.Itoa(s.MaxCredits) + " num_terms=" + strconv.Itoa(s.NumTerms) +
-			" | 후보 " + strconv.Itoa(res.Candidates) + "개"
+			" | " + strconv.Itoa(res.Candidates) + " candidates"
 		if res.UsedFallback {
-			head += " (그리디 폴백)"
+			head += " (greedy fallback)"
 		}
 		fmt.Fprintln(os.Stderr, head)
 		if res.Plan.Feasible {
-			fmt.Fprintln(os.Stderr, "  feasible: "+strconv.Itoa(len(res.Plan.Terms))+"학기 사용 (상한 무시 하한 "+
-				strconv.Itoa(res.LowerBoundTerms)+"학기), 배치 총 "+strconv.Itoa(res.TotalCredits)+"학점")
+			fmt.Fprintln(os.Stderr, "  feasible: used "+strconv.Itoa(len(res.Plan.Terms))+" terms (lower bound ignoring cap: "+
+				strconv.Itoa(res.LowerBoundTerms)+" terms), placed "+strconv.Itoa(res.TotalCredits)+" credits total")
 			if res.MinTermsProven {
-				fmt.Fprintln(os.Stderr, "  최소 학기: 보장 — 이보다 일찍 졸업하는 배치는 없음")
+				fmt.Fprintln(os.Stderr, "  minimum terms: proven — no placement graduates earlier than this")
 			} else {
-				fmt.Fprintln(os.Stderr, "  최소 학기: 보장 안 됨 — 전수탐색 한도 초과 또는 조합 폭발로 일부만 탐색")
+				fmt.Fprintln(os.Stderr, "  minimum terms: not proven — exhaustive search limit exceeded or combination explosion, only partially searched")
 			}
 			violations := engine.VerifyPlan(catalog, programs, s, res.Plan)
 			if len(violations) == 0 {
-				fmt.Fprintln(os.Stderr, "  verify: OK — 개설학기/prereq/coreq/학점상한/중복/그룹 충족 모두 만족")
+				fmt.Fprintln(os.Stderr, "  verify: OK — term offerings/prereq/coreq/credit cap/duplicates/group requirements all satisfied")
 			} else {
 				code = 3
 				fmt.Fprintln(os.Stderr, "  verify: FAIL")

@@ -26,7 +26,7 @@ class UbcSyncEndpointTest(TestCase):
         cls.load_output = out.getvalue()
 
     def test_load_output(self):
-        self.assertIn("과목 30개, 트랙 3개, 학생 6명", self.load_output)
+        self.assertIn("30 courses, 3 tracks, 6 students", self.load_output)
 
     def test_matches_file_engine(self):
         catalog, programs, students = load_all(UBC_DIR)

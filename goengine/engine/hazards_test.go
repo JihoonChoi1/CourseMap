@@ -38,7 +38,7 @@ func TestSeasonAtNegativeTerm(t *testing.T) {
 
 func sample() *JObj {
 	return Obj().
-		Set("s", "A\"B\\ \t\n\r\b\f\x00\x1b\x7f  한글 😀 <&>").
+		Set("s", "A\"B\\ \t\n\r\b\f\x00\x1b\x7f  café 😀 <&>").
 		Set("l", []string{}).
 		Set("d", Obj()).
 		Set("n", []any{1, -2, true, false, nil, []string{"x"}}).
@@ -47,13 +47,13 @@ func sample() *JObj {
 
 func TestDumpsMatchesPython(t *testing.T) {
 	// json.dumps(v, ensure_ascii=False)
-	want := "{\"s\": \"A\\\"B\\\\ \\t\\n\\r\\b\\f\\u0000\\u001b\x7f  한글 😀 <&>\", \"l\": [], \"d\": {}, " +
+	want := "{\"s\": \"A\\\"B\\\\ \\t\\n\\r\\b\\f\\u0000\\u001b\x7f  café 😀 <&>\", \"l\": [], \"d\": {}, " +
 		"\"n\": [1, -2, true, false, null, [\"x\"]], \"o\": {\"k\": {\"z\": []}}}"
 	if got := Dumps(sample(), -1); got != want {
 		t.Errorf("Dumps(-1)\n got %q\nwant %q", got, want)
 	}
 	// json.dumps(v, ensure_ascii=False, indent=2)
-	want = "{\n  \"s\": \"A\\\"B\\\\ \\t\\n\\r\\b\\f\\u0000\\u001b\x7f  한글 😀 <&>\",\n  \"l\": [],\n  \"d\": {},\n" +
+	want = "{\n  \"s\": \"A\\\"B\\\\ \\t\\n\\r\\b\\f\\u0000\\u001b\x7f  café 😀 <&>\",\n  \"l\": [],\n  \"d\": {},\n" +
 		"  \"n\": [\n    1,\n    -2,\n    true,\n    false,\n    null,\n    [\n      \"x\"\n    ]\n  ],\n" +
 		"  \"o\": {\n    \"k\": {\n      \"z\": []\n    }\n  }\n}"
 	if got := Dumps(sample(), 2); got != want {
@@ -92,12 +92,12 @@ func TestDecodeJSONKeepsIntFloatDistinction(t *testing.T) {
 	// Python json: 3 -> int, 3.0 / 3e0 -> float (type error), true -> bool (must be int)
 	for raw, want := range map[string]string{
 		`{"n": 3}`:    "",
-		`{"n": 3.0}`:  "x: 'n' 타입 오류",
-		`{"n": 3e0}`:  "x: 'n' 타입 오류",
-		`{"n": true}`: "x: 'n'는 int여야 함",
-		`{"n": "3"}`:  "x: 'n' 타입 오류",
-		`{"m": 3}`:    "x: 'n' 필드 없음",
-		`[3]`:         "x: 'n' 필드 없음",
+		`{"n": 3.0}`:  "x: 'n' has the wrong type",
+		`{"n": 3e0}`:  "x: 'n' has the wrong type",
+		`{"n": true}`: "x: 'n' must be an int",
+		`{"n": "3"}`:  "x: 'n' has the wrong type",
+		`{"m": 3}`:    "x: 'n' field is missing",
+		`[3]`:         "x: 'n' field is missing",
 	} {
 		v, err := DecodeJSON([]byte(raw))
 		if err != nil {

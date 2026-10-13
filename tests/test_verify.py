@@ -67,32 +67,32 @@ class VerifyPlanTest(EngineTestCase, unittest.TestCase):
         def m(p):
             move(p, "FO", spring)
             fix_credits(self.cat, p)
-        self.assertViolation(self.broken(m, student(num_terms=4, cap=99, completed=["DONE"])), "FO: SPRING 미개설")
+        self.assertViolation(self.broken(m, student(num_terms=4, cap=99, completed=["DONE"])), "FO: SPRING not offered")
 
     def test_over_cap(self):
-        self.assertViolation(self.broken(lambda p: None, student(num_terms=4, cap=3, completed=["DONE"])), "> 상한 3")
+        self.assertViolation(self.broken(lambda p: None, student(num_terms=4, cap=3, completed=["DONE"])), "> cap 3")
 
     def test_credits_field_mismatch(self):
         def m(p):
             p["terms"][0]["credits"] += 1
-        self.assertViolation(self.broken(m), "credits 필드")
+        self.assertViolation(self.broken(m), "credits field")
 
     def test_duplicate_placement(self):
         def m(p):
             p["terms"][-1]["courses"].append(p["terms"][0]["courses"][0])
             fix_credits(self.cat, p)
-        self.assertViolation(self.broken(m, student(num_terms=4, cap=99, completed=["DONE"])), "중복 배치")
+        self.assertViolation(self.broken(m, student(num_terms=4, cap=99, completed=["DONE"])), "placed more than once")
 
     def test_completed_course_placed(self):
         def m(p):
             p["terms"][0]["courses"].append("DONE")
             fix_credits(self.cat, p)
-        self.assertViolation(self.broken(m, student(num_terms=4, cap=99, completed=["DONE"])), "DONE: 이미 이수한")
+        self.assertViolation(self.broken(m, student(num_terms=4, cap=99, completed=["DONE"])), "DONE: already completed")
 
     def test_unknown_course(self):
         def m(p):
             p["terms"][0]["courses"].append("GHOST")
-        self.assertViolation(self.broken(m), "GHOST: 카탈로그에 없는")
+        self.assertViolation(self.broken(m), "GHOST: not in the catalog")
 
     def test_required_course_missing(self):
         def m(p):
@@ -100,7 +100,7 @@ class VerifyPlanTest(EngineTestCase, unittest.TestCase):
                 if "FO" in term["courses"]:
                     term["courses"].remove("FO")
             fix_credits(self.cat, p)
-        self.assertViolation(self.broken(m), "그룹 REQ: 2/3")
+        self.assertViolation(self.broken(m), "group REQ: 2/3")
 
     def test_pick_n_unmet(self):
         def m(p):
@@ -109,12 +109,12 @@ class VerifyPlanTest(EngineTestCase, unittest.TestCase):
                     if e in term["courses"]:
                         term["courses"].remove(e)
             fix_credits(self.cat, p)
-        self.assertViolation(self.broken(m), "그룹 P: 0/1")
+        self.assertViolation(self.broken(m), "group P: 0/1")
 
     def test_chosen_missing(self):
         def m(p):
             p["chosen"] = {}
-        self.assertViolation(self.broken(m), "chosen.P: 0개 < n=1")
+        self.assertViolation(self.broken(m), "chosen.P: 0 chosen < n=1")
 
     def test_chosen_not_placed(self):
         picked = self.good["chosen"]["P"][0]
@@ -132,12 +132,12 @@ class VerifyPlanTest(EngineTestCase, unittest.TestCase):
     def test_wrong_term_label(self):
         def m(p):
             p["terms"][0]["season"] = "SPRING"
-        self.assertViolation(self.broken(m), "학기 0: 2026 SPRING (기대 2026 FALL)")
+        self.assertViolation(self.broken(m), "term 0: 2026 SPRING (expected 2026 FALL)")
 
     def test_wrong_year(self):
         def m(p):
             p["terms"][1]["year"] += 1
-        self.assertViolation(self.broken(m), "학기 1:")
+        self.assertViolation(self.broken(m), "term 1:")
 
     def test_too_many_terms(self):
         self.assertViolation(self.broken(lambda p: None, student(num_terms=len(self.good["terms"]) - 1, cap=7,
@@ -146,7 +146,7 @@ class VerifyPlanTest(EngineTestCase, unittest.TestCase):
     def test_infeasible_plan_is_not_verified(self):
         def m(p):
             p["feasible"] = False
-        self.assertEqual(self.broken(m), ["feasible=false인 plan은 검증 대상이 아님"])
+        self.assertEqual(self.broken(m), ["a plan with feasible=false is not verified"])
 
     def test_or_prereq_needs_only_one_alternative(self):
         cat = catalog([course("X"), course("Y"), course("C", prereqs=[["X", "Y"]])])

@@ -27,7 +27,7 @@ def plan(snapshot: dict) -> PlanResult:
     proc = subprocess.run([settings.GO_ENGINE_BIN, "--stdin-snapshot"], input=json.dumps(snapshot, ensure_ascii=False),
                           capture_output=True, text=True, encoding="utf-8")
     if proc.returncode != 0:
-        raise GoEngineError("courseplan 종료 코드 " + str(proc.returncode) + ": " + proc.stderr.strip())
+        raise GoEngineError("courseplan exit code " + str(proc.returncode) + ": " + proc.stderr.strip())
     out = json.loads(proc.stdout)
     return PlanResult(plan=out["plan"], candidates=out["candidates"], used_fallback=out["used_fallback"],
                       picks=out["picks"], lower_bound_terms=out["lower_bound_terms"],

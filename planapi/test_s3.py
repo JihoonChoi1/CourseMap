@@ -108,7 +108,7 @@ class ExportTest(test_async.AsyncTestCase):
         self.assertEqual(doc["input"], PlanJob.objects.get(id=body["job_id"]).input)
         self.assertEqual(doc["input"]["student"]["max_credits_per_term"], 12)
         self.assertEqual(doc["exported_at"], ex["exported_at"])
-        self.assertIn("미적분학 I", raw.decode("utf-8"))  # ensure_ascii=False, UTF-8
+        self.assertIn("Calculus I", raw.decode("utf-8"))
 
     def test_presigned_url_downloads_same_object(self):
         body = self.run_job("S2")
@@ -139,7 +139,7 @@ class ExportTest(test_async.AsyncTestCase):
         self.assertIsNone(doc["engine"]["min_terms_proven"])
 
     def test_failed_job_is_not_exported(self):
-        with mock.patch("planapi.views.verify_plan", return_value=["가짜 위반"]):
+        with mock.patch("planapi.views.verify_plan", return_value=["fake violation"]):
             body = self.run_job("S1")
         self.assertEqual(body["status"], "FAILED")
         self.assertIsNone(body["export"])
@@ -167,7 +167,7 @@ class ExportTest(test_async.AsyncTestCase):
 
         out = StringIO()
         call_command("export_plan_jobs", stdout=out, stderr=StringIO())
-        self.assertIn("성공 1개, 실패 0개", out.getvalue())
+        self.assertIn("1 succeeded, 0 failed", out.getvalue())
         again = self.job(body["job_id"]).json()
         self.assertEqual(again["export"]["status"], "SUCCESS")
         self.assertIsNone(again["export"]["error"])

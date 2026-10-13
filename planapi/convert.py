@@ -25,7 +25,7 @@ def catalog_programs_raw() -> tuple[dict, dict]:
     """DB -> a dict shaped like catalog.json/programs.json. Also used as the input snapshot for async jobs."""
     meta = models.CatalogMeta.objects.first()
     if meta is None:
-        raise StoredDataError("카탈로그가 적재되지 않음 (manage.py load_data 필요)")
+        raise StoredDataError("catalog is not loaded (run manage.py load_data)")
     raw_catalog = {"seasons": meta.seasons, "courses": []}
     for c in models.Course.objects.order_by("position"):
         raw_catalog["courses"].append({
@@ -35,7 +35,7 @@ def catalog_programs_raw() -> tuple[dict, dict]:
 
     degrees = list(models.Program.objects.filter(kind=models.Program.DEGREE))
     if len(degrees) != 1:
-        raise StoredDataError("졸업요건(DEGREE)이 " + str(len(degrees)) + "개 적재됨 (정확히 1개여야 함)")
+        raise StoredDataError(str(len(degrees)) + " degree requirement sets (DEGREE) are loaded (there must be exactly 1)")
     tracks = models.Program.objects.filter(kind=models.Program.TRACK).order_by("position")
     raw_programs = {"degree": _program_dict(degrees[0]), "tracks": [_program_dict(t) for t in tracks]}
     return raw_catalog, raw_programs
@@ -45,7 +45,7 @@ def parse_catalog_programs(raw_catalog: dict, raw_programs: dict) -> tuple[Catal
     try:
         return parse_catalog(raw_catalog), parse_programs(raw_programs)
     except InputError as e:
-        raise StoredDataError("저장된 데이터 형태 오류: " + str(e))
+        raise StoredDataError("stored data has the wrong shape: " + str(e))
 
 
 def _program_dict(p: models.Program) -> dict:

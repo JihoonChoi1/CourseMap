@@ -19,13 +19,13 @@ class InputError(Exception):
 
 def _field(obj: dict, key: str, kind, where: str):
     if not isinstance(obj, dict) or key not in obj:
-        raise InputError(where + ": '" + key + "' 필드 없음")
+        raise InputError(where + ": '" + key + "' field is missing")
     value = obj[key]
     # bool is a subtype of int, so filter it out explicitly
     if kind is int and isinstance(value, bool):
-        raise InputError(where + ": '" + key + "'는 int여야 함")
+        raise InputError(where + ": '" + key + "' must be an int")
     if not isinstance(value, kind):
-        raise InputError(where + ": '" + key + "' 타입 오류")
+        raise InputError(where + ": '" + key + "' has the wrong type")
     return value
 
 
@@ -33,7 +33,7 @@ def _str_list(obj: dict, key: str, where: str) -> list[str]:
     values = _field(obj, key, list, where)
     for v in values:
         if not isinstance(v, str):
-            raise InputError(where + ": '" + key + "'는 문자열 리스트여야 함")
+            raise InputError(where + ": '" + key + "' must be a list of strings")
     return list(values)
 
 
@@ -42,10 +42,10 @@ def _cnf(obj: dict, key: str, where: str) -> list[list[str]]:
     out = []
     for clause in clauses:
         if not isinstance(clause, list):
-            raise InputError(where + ": '" + key + "'는 [][]string이어야 함")
+            raise InputError(where + ": '" + key + "' must be a list of string lists")
         for v in clause:
             if not isinstance(v, str):
-                raise InputError(where + ": '" + key + "'는 [][]string이어야 함")
+                raise InputError(where + ": '" + key + "' must be a list of string lists")
         out.append(list(clause))
     return out
 
@@ -55,9 +55,9 @@ def _read_json(path: str) -> dict:
         with open(path, encoding="utf-8") as f:
             return json.load(f)
     except OSError as e:
-        raise InputError(path + ": 읽을 수 없음 (" + str(e) + ")")
+        raise InputError(path + ": cannot read (" + str(e) + ")")
     except json.JSONDecodeError as e:
-        raise InputError(path + ": JSON 파싱 실패 (" + str(e) + ")")
+        raise InputError(path + ": invalid JSON (" + str(e) + ")")
 
 
 def load_catalog(path: str) -> Catalog:
@@ -67,7 +67,7 @@ def load_catalog(path: str) -> Catalog:
 def parse_catalog(raw: dict) -> Catalog:
     seasons = _str_list(raw, "seasons", "catalog")
     if len(seasons) == 0:
-        raise InputError("catalog: 'seasons'가 비어 있음")
+        raise InputError("catalog: 'seasons' is empty")
     courses = []
     by_id = {}
     index = {}
@@ -135,11 +135,11 @@ def parse_student(rs: dict, seasons: list[str], where: str) -> Student:
         max_credits=_field(rs, "max_credits_per_term", int, where),
     )
     if s.start_season not in seasons:
-        raise InputError(where + ": 알 수 없는 start_term.season '" + s.start_season + "'")
+        raise InputError(where + ": unknown start_term.season '" + s.start_season + "'")
     if s.num_terms < 1:
-        raise InputError(where + ": num_terms는 1 이상이어야 함")
+        raise InputError(where + ": num_terms must be at least 1")
     if s.max_credits < 1:
-        raise InputError(where + ": max_credits_per_term은 1 이상이어야 함")
+        raise InputError(where + ": max_credits_per_term must be at least 1")
     return s
 
 

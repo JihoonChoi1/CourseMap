@@ -63,7 +63,7 @@ class OfferedTest(EngineTestCase, unittest.TestCase):
         errs = res.plan["errors"]
         self.assertEqual(len(errs), 1)
         self.assertEqual(errs[0]["courses"], ["F2"])
-        self.assertIn("최단 체인", errs[0]["message"])
+        self.assertIn("Shortest chain", errs[0]["message"])
         self.assertIn("F1", errs[0]["message"])
         self.assertNotIn("E_NOT_OFFERED", [e["code"] for e in errs])
 

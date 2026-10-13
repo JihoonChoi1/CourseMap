@@ -70,7 +70,7 @@ class GridPropertyTest(unittest.TestCase):
             if not res.plan["feasible"]:
                 with self.subTest(case=self.label(st, cap, n)):
                     for e in res.plan["errors"]:
-                        self.assertNotIn("증명된 것은 아님", e["message"])
+                        self.assertNotIn("is not proven", e["message"])
 
     def test_feasible_plans_use_minimum_terms(self):
         # 1st-priority objective "earliest graduation": the result's term count equals the oracle's minimum, and the engine proved it too.

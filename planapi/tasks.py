@@ -40,7 +40,7 @@ def run_plan_job(job_id: str):
         else:
             res, violations = views.compute(catalog, programs, student)
     except SoftTimeLimitExceeded:
-        jobs.finish_failed(job_id, "TIMEOUT", "계산이 " + str(SOFT_TIME_LIMIT) + "초 제한을 넘어 중단됨")
+        jobs.finish_failed(job_id, "TIMEOUT", "computation stopped after exceeding the " + str(SOFT_TIME_LIMIT) + "s limit")
         return
     except Exception as e:
         jobs.finish_failed(job_id, "WORKER_ERROR", type(e).__name__ + ": " + str(e))
@@ -56,7 +56,7 @@ def run_plan_job(job_id: str):
         except SoftTimeLimitExceeded:
             # computation already finished, so leave the job as SUCCESS
             PlanJob.objects.filter(id=job_id).update(export_status=PlanJob.EXPORT_FAILED,
-                                                     export_error="S3 업로드 중 soft time limit 초과")
+                                                     export_error="soft time limit exceeded during S3 upload")
         except Exception as e:  # boto exceptions are handled inside export_job. Other exceptions also don't change job status
             PlanJob.objects.filter(id=job_id).update(export_status=PlanJob.EXPORT_FAILED,
                                                      export_error=type(e).__name__ + ": " + str(e))

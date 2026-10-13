@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>졸업 코스플랜</title>
+<title>CourseMap</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='7' width='4' height='8' fill='%230e7c7b'/%3E%3Crect x='6' y='3' width='4' height='12' fill='%231f5fad'/%3E%3Crect x='11' y='9' width='4' height='6' fill='%23b0731a'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --paper: #eef1f5;
@@ -27,7 +27,7 @@
   --ok: #1d6b45;
   --err-bg: #fde8e6;
   --err: #a8261b;
-  --unit: 17px; /* 학점 1당 높이 */
+  --unit: 17px; /* height per credit */
   --radius: 6px;
 }
 * { box-sizing: border-box; }
@@ -36,7 +36,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.55;
   font-variant-numeric: tabular-nums;
@@ -91,7 +91,7 @@ button, input { font: inherit; }
 .notes .ok { background: var(--ok-bg); color: var(--ok); }
 .notes .err { background: var(--err-bg); color: var(--err); }
 
-/* 학기 보드: 칸 높이 = 학점 상한, 블록 높이 = 학점 */
+/* term board: column height = credit cap, block height = credits */
 .board {
   display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, 1fr); gap: 14px;
   overflow-x: auto; padding-bottom: 8px; margin-bottom: 28px;
@@ -146,16 +146,16 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 </head>
 <body>
 <header class="top">
-  <h1>졸업 코스플랜</h1>
+  <h1>CourseMap</h1>
   {% if data %}<p>{{ data.degree }}</p>{% endif %}
 </header>
 
 {% if not data %}
 <main class="main">
   <div class="empty">
-    <h2>불러올 데이터가 없습니다</h2>
-    <p>DB에 카탈로그가 적재되지 않았습니다. 터미널에서 <b>.venv/bin/python manage.py load_data --data-dir data/ubc</b>
-      (UBC 실데이터) 또는 <b>.venv/bin/python manage.py load_data</b>(가상 데이터)를 실행한 뒤 새로고침하세요.</p>
+    <h2>No data loaded</h2>
+    <p>The database has no catalog yet. In a terminal, run <b>.venv/bin/python manage.py load_data --data-dir data/ubc</b>
+      (real UBC data) or <b>.venv/bin/python manage.py load_data</b> (fictional data), then reload this page.</p>
   </div>
 </main>
 {% else %}
@@ -163,22 +163,22 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 <div class="layout">
   <aside class="side">
     <form id="form">
-      <h2 id="students-title">학생</h2>
+      <h2 id="students-title">Students</h2>
       <ul class="students" role="radiogroup" aria-labelledby="students-title" id="students"></ul>
       <div class="fields">
-        <label>학기당 최대 학점<input id="max-credits" type="number" min="1" max="99" inputmode="numeric"></label>
-        <label>남은 학기 수<input id="num-terms" type="number" min="1" max="20" inputmode="numeric"></label>
+        <label>Max credits per term<input id="max-credits" type="number" min="1" max="99" inputmode="numeric"></label>
+        <label>Terms remaining<input id="num-terms" type="number" min="1" max="20" inputmode="numeric"></label>
       </div>
       <div class="actions">
-        <button class="btn primary" type="submit" id="run-sync">계획 만들기</button>
-        <button class="btn secondary" type="button" id="run-job">계획 만들고 S3에 저장</button>
+        <button class="btn primary" type="submit" id="run-sync">Build plan</button>
+        <button class="btn secondary" type="button" id="run-job">Build as a job and save to S3</button>
       </div>
-      <p class="hint">빈칸은 학생 기본값을 씁니다. S3 저장은 Celery 워커가 떠 있어야 합니다.</p>
+      <p class="hint">Blank fields use the student's defaults. Saving to S3 needs a running Celery worker.</p>
     </form>
   </aside>
 
   <main class="main" id="result" aria-live="polite">
-    <p class="empty">왼쪽에서 학생을 고르고 <b>계획 만들기</b>를 누르세요.</p>
+    <p class="empty">Pick a student on the left and press <b>Build plan</b>.</p>
   </main>
 </div>
 
@@ -212,7 +212,7 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
     return "s-other";
   }
 
-  // ---- 학생 목록 ----
+  // ---- student list ----
   var list = document.getElementById("students");
   DATA.students.forEach(function (s, i) {
     var input = el("input", { type: "radio", name: "student", value: s.id });
@@ -221,8 +221,8 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
     list.appendChild(el("li", {}, [el("label", {}, [
       input,
       el("span", { class: "name" }, [s.id + " " + s.name]),
-      el("span", { class: "meta", title: track }, [track.replace(/\s*\(.*\)\s*$/, "") + ", " + s.start + " 시작"]),
-      el("span", { class: "meta" }, ["기본 " + s.num_terms + "학기 × " + s.max_credits + "학점, 이수 " + s.completed.length + "과목"]),
+      el("span", { class: "meta", title: track }, [track.replace(/\s*\(.*\)\s*$/, "") + ", starts " + s.start]),
+      el("span", { class: "meta" }, ["Default " + s.num_terms + " terms × " + s.max_credits + " credits, " + s.completed.length + " courses done"]),
     ])]));
   });
   list.addEventListener("change", fillDefaults);
@@ -251,7 +251,7 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
   }
   function effectiveCap(s) { return capInput.value !== "" ? parseInt(capInput.value, 10) : s.max_credits; }
 
-  // ---- 결과 그리기 ----
+  // ---- render the result ----
   var result = document.getElementById("result");
   function show(nodes) {
     result.replaceChildren.apply(result, nodes);
@@ -275,44 +275,44 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
       plan.terms.forEach(function (t) { total += t.credits; });
       var first = plan.terms[0], last = plan.terms[plan.terms.length - 1];
       nodes.push(el("p", { class: "lede" }, [
-        plan.terms.length + "학기 동안 " + total + "학점을 듣고 졸업 요건을 채웁니다 (" +
+        "Meets the requirements in " + plan.terms.length + " terms and " + total + " credits (" +
         first.year + " " + first.season + " ~ " + last.year + " " + last.season + ")."
       ]));
       if (meta.min_terms_proven) {
-        notes.appendChild(el("li", { class: "ok" }, ["이보다 빨리 졸업하는 계획은 없습니다."]));
+        notes.appendChild(el("li", { class: "ok" }, ["No plan graduates sooner than this."]));
       } else if (meta.used_fallback) {
         notes.appendChild(el("li", { class: "warn" }, [
-          "선택 과목 조합이 너무 많아 비용 기준 조합 하나만 확인했습니다. 더 짧은 계획이 있을 수 있습니다."]));
+          "There were too many elective combinations, so only the cheapest one was checked. A shorter plan may exist."]));
       } else {
         notes.appendChild(el("li", { class: "warn" }, [
-          "탐색 한도를 넘어 최소 학기인지 확인하지 못했습니다. 더 짧은 계획이 있을 수 있습니다."]));
+          "The search limit was reached before the minimum could be confirmed. A shorter plan may exist."]));
       }
     } else {
       nodes.push(el("p", { class: "lede" }, [
-        "이 조건으로는 졸업 계획을 만들 수 없습니다. 학기당 최대 학점이나 남은 학기 수를 늘려 보세요."]));
+        "No plan meets the requirements under these settings. Try more credits per term or more terms."]));
       if (meta.used_fallback) {
         notes.appendChild(el("li", { class: "warn" }, [
-          "선택 과목 조합이 너무 많아 일부만 확인했습니다. 다른 조합으로는 가능할 수도 있습니다."]));
+          "There were too many elective combinations, so only some were checked. Another combination might work."]));
       }
     }
     if (notes.children.length) nodes.push(notes);
 
     if (plan.feasible) {
       var cap = effectiveCap(s);
-      var board = el("div", { class: "board fresh", role: "list", "aria-label": "학기별 계획" });
+      var board = el("div", { class: "board fresh", role: "list", "aria-label": "Plan by term" });
       plan.terms.forEach(function (t) {
         var stack = el("div", { class: "stack", style: "--cap:" + cap });
-        if (t.courses.length === 0) stack.appendChild(el("span", { class: "none" }, ["수강 없음"]));
+        if (t.courses.length === 0) stack.appendChild(el("span", { class: "none" }, ["No courses"]));
         t.courses.forEach(function (cid) {
           var c = DATA.courses[cid] || { title: "", credits: 1 };
           stack.appendChild(el("div", {
             class: "tile " + subjectClass(cid), style: "--cr:" + c.credits,
-            title: cid + " " + c.title + " (" + c.credits + "학점)"
-          }, [el("b", {}, [cid + "  " + c.credits + "학점"]), el("small", {}, [c.title])]));
+            title: cid + " " + c.title + " (" + c.credits + " credits)"
+          }, [el("b", {}, [cid + "  " + c.credits + " cr"]), el("small", {}, [c.title])]));
         });
         board.appendChild(el("div", { class: "term", role: "listitem" }, [
           el("div", { class: "term-head" }, [el("strong", {}, [t.year + " " + t.season]),
-                                             el("span", {}, [t.credits + " / " + cap + "학점"])]),
+                                             el("span", {}, [t.credits + " / " + cap + " credits"])]),
           stack
         ]));
       });
@@ -320,46 +320,46 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 
       var groups = el("ul", { class: "groups" });
       Object.keys(plan.chosen).forEach(function (gid) {
-        var names = plan.chosen[gid].map(function (c) { return completed[c] ? c + " (이수)" : c; });
+        var names = plan.chosen[gid].map(function (c) { return completed[c] ? c + " (done)" : c; });
         groups.appendChild(el("li", {}, [el("span", { class: "g" }, [DATA.groups[gid] || gid]),
                                          el("span", {}, [names.join(", ")])]));
       });
       if (groups.children.length) {
-        nodes.push(el("div", { class: "section" }, [el("h3", {}, ["고른 선택 과목"]), groups]));
+        nodes.push(el("div", { class: "section" }, [el("h3", {}, ["Chosen electives"]), groups]));
       }
     } else {
       var errs = el("ul", { class: "errors" });
       plan.errors.forEach(function (e) {
         errs.appendChild(el("li", {}, [el("code", {}, [e.code]), " " + e.message]));
       });
-      nodes.push(el("div", { class: "section" }, [el("h3", {}, ["이유"]), errs]));
+      nodes.push(el("div", { class: "section" }, [el("h3", {}, ["Why"]), errs]));
     }
 
     if (s.completed.length) {
       nodes.push(el("div", { class: "section" }, [el("details", {}, [
-        el("summary", {}, ["이미 이수한 과목 " + s.completed.length + "개"]),
+        el("summary", {}, [s.completed.length + " courses already completed"]),
         el("p", { class: "small" }, [s.completed.join(", ")])
       ])]));
     }
     if (extra) nodes.push(extra);
-    nodes.push(el("p", { class: "small" }, ["평가한 선택 조합 후보 " + meta.candidates + "개"]));
+    nodes.push(el("p", { class: "small" }, [meta.candidates + " elective combinations evaluated"]));
     show(nodes);
   }
 
   function exportPanel(job) {
     var ex = job.export;
-    var box = el("div", { class: "section export" }, [el("h3", {}, ["S3 저장"])]);
+    var box = el("div", { class: "section export" }, [el("h3", {}, ["Saved to S3"])]);
     if (!ex) {
-      box.appendChild(el("p", {}, ["S3 저장이 꺼져 있습니다 (S3_EXPORT_ENABLED=0)."]));
+      box.appendChild(el("p", {}, ["S3 export is turned off (S3_EXPORT_ENABLED=0)."]));
     } else if (ex.status === "SUCCESS") {
-      box.appendChild(el("p", {}, [el("a", { href: ex.url, target: "_blank", rel: "noopener" }, ["결과 파일 받기 (JSON)"])]));
-      box.appendChild(el("p", { class: "small" }, ["링크는 " + DATA.presign_minutes + "분 동안 유효합니다."]));
+      box.appendChild(el("p", {}, [el("a", { href: ex.url, target: "_blank", rel: "noopener" }, ["Download the result (JSON)"])]));
+      box.appendChild(el("p", { class: "small" }, ["The link is valid for " + DATA.presign_minutes + " minutes."]));
       box.appendChild(el("p", { class: "key" }, ["s3://" + ex.bucket + "/" + ex.key]));
     } else if (ex.status === "FAILED") {
-      box.appendChild(el("p", {}, ["계획은 만들었지만 S3에 올리지 못했습니다: " + ex.error]));
-      box.appendChild(el("p", { class: "small" }, ["S3를 확인한 뒤 manage.py export_plan_jobs로 다시 올릴 수 있습니다."]));
+      box.appendChild(el("p", {}, ["The plan was built, but the S3 upload failed: " + ex.error]));
+      box.appendChild(el("p", { class: "small" }, ["Check S3, then retry with manage.py export_plan_jobs."]));
     } else {
-      box.appendChild(el("p", {}, ["S3에 올리는 중입니다."]));
+      box.appendChild(el("p", {}, ["Uploading to S3."]));
     }
     box.appendChild(el("p", { class: "small" }, ["job " + job.job_id]));
     return box;
@@ -374,13 +374,13 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
   var btnJob = document.getElementById("run-job");
   function busy(on) { btnSync.disabled = on; btnJob.disabled = on; }
 
-  // ---- 동기: GET /api/students/{id}/plan ----
+  // ---- sync: GET /api/students/{id}/plan ----
   document.getElementById("form").addEventListener("submit", function (ev) {
     ev.preventDefault();
     var s = selected();
     if (!s) return;
     busy(true);
-    showBusy("계획을 만드는 중입니다.");
+    showBusy("Building the plan.");
     fetch("/api/students/" + encodeURIComponent(s.id) + "/plan" + query())
       .then(function (resp) {
         if (!resp.ok) return readError(resp).then(showError);
@@ -392,16 +392,16 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
           });
         });
       })
-      .catch(function (e) { showError("서버에 연결할 수 없습니다: " + e.message); })
+      .catch(function (e) { showError("Could not reach the server: " + e.message); })
       .finally(function () { busy(false); });
   });
 
-  // ---- 비동기: POST /api/students/{id}/plan-jobs -> GET /api/plan-jobs/{job_id} ----
+  // ---- async: POST /api/students/{id}/plan-jobs -> GET /api/plan-jobs/{job_id} ----
   btnJob.addEventListener("click", function () {
     var s = selected();
     if (!s) return;
     busy(true);
-    showBusy("작업을 만드는 중입니다.");
+    showBusy("Creating the job.");
     var deadline = Date.now() + 60000;
 
     function poll(jobId) {
@@ -412,15 +412,15 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
                      (job.status === "SUCCESS" && (!job.export || job.export.status !== "PENDING"));
           if (!done) {
             if (Date.now() > deadline) {
-              showError("60초 안에 끝나지 않았습니다. Celery 워커가 떠 있는지 확인하세요 (job " + jobId + ").");
+              showError("The job did not finish within 60 seconds. Check that the Celery worker is running (job " + jobId + ").");
               return;
             }
-            showBusy(job.status === "SUCCESS" ? "S3에 올리는 중입니다." :
-                     job.status === "RUNNING" ? "워커가 계산하는 중입니다." : "워커를 기다리는 중입니다.");
+            showBusy(job.status === "SUCCESS" ? "Uploading to S3." :
+                     job.status === "RUNNING" ? "The worker is computing." : "Waiting for a worker.");
             return new Promise(function (r) { setTimeout(r, 500); }).then(function () { return poll(jobId); });
           }
           if (job.status === "FAILED") {
-            showError("작업이 실패했습니다 (" + job.error.code + "): " + job.error.detail);
+            showError("The job failed (" + job.error.code + "): " + job.error.detail);
             return;
           }
           renderPlan(s, job.plan, job.engine, exportPanel(job));
@@ -433,7 +433,7 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
         if (!resp.ok) return readError(resp).then(showError);
         return resp.json().then(function (b) { return poll(b.job_id); });
       })
-      .catch(function (e) { showError("서버에 연결할 수 없습니다: " + e.message); })
+      .catch(function (e) { showError("Could not reach the server: " + e.message); })
       .finally(function () { busy(false); });
   });
 })();

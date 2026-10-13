@@ -140,7 +140,7 @@ def measure():
                     "candidates": res.candidates, "pick_combos": combos, "used_fallback": res.used_fallback,
                     "min_terms_proven": res.min_terms_proven, "sec": sec, "max_nodes": nodes,
                     "limit_hit": nodes > scheduler.EXACT_NODE_LIMIT,
-                    "unproven_msg": any("증명된 것은 아님" in e["message"] for e in plan["errors"]),
+                    "unproven_msg": any("is not proven" in e["message"] for e in plan["errors"]),
                     "error_codes": sorted(set(e["code"] for e in plan["errors"])),
                     "verify": violations,
                     "oracle_feasible": o_min != 0 and n >= o_min, "oracle_min_terms": o_min,

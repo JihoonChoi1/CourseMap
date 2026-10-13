@@ -42,9 +42,9 @@ class CapacityTest(EngineTestCase, unittest.TestCase):
         errs = res.plan["errors"]
         self.assertEqual(len(errs), 1)
         self.assertEqual(sorted(errs[0]["courses"]), ["A", "B"])
-        self.assertIn("학점 부족", errs[0]["message"])
-        self.assertIn("2027 SPRING에 반드시 배치", errs[0]["message"])
-        self.assertIn("최소 학기 상한은 7", errs[0]["message"])
+        self.assertIn("Not enough room", errs[0]["message"])
+        self.assertIn("must be placed in 2027 SPRING", errs[0]["message"])
+        self.assertIn("per-term cap of at least 7", errs[0]["message"])
 
     def test_single_term_overload_resolved_by_cap(self):
         res = self.plan(self.pinned(), programs([all_group("G", ["A", "B", "C"])]), student(num_terms=2, cap=7))
@@ -57,9 +57,9 @@ class CapacityTest(EngineTestCase, unittest.TestCase):
         res = self.plan(cat, programs([all_group("G", ["A", "B", "C", "D", "E"])]), student(num_terms=2, cap=6))
         self.assertInfeasible(res, "E_INFEASIBLE")
         msg = res.plan["errors"][0]["message"]
-        self.assertIn("학점 부족", msg)
-        self.assertIn("2학기 × 상한 6 = 12", msg)
-        self.assertIn("최소 학기 상한은 8", msg)
+        self.assertIn("Not enough room", msg)
+        self.assertIn("2 terms × cap 6 = 12", msg)
+        self.assertIn("per-term cap of at least 8", msg)
         self.assertFeasible(self.plan(cat, programs([all_group("G", ["A", "B", "C", "D", "E"])]),
                                       student(num_terms=2, cap=9)))
 
@@ -71,7 +71,7 @@ class CapacityTest(EngineTestCase, unittest.TestCase):
         res = self.plan(cat, programs([all_group("G", ["T1", "T2", "T3"])]), student(num_terms=4, cap=3))
         self.assertInfeasible(res, "E_INFEASIBLE")
         msg = res.plan["errors"][0]["message"]
-        self.assertIn("2027 FALL ~ 2028 SPRING (2학기)", msg)
+        self.assertIn("2027 FALL ~ 2028 SPRING (2 terms)", msg)
         self.assertEqual(sorted(res.plan["errors"][0]["courses"]), ["T1", "T2", "T3"])
 
     def test_credit_combination_cannot_fill_cap(self):
@@ -80,9 +80,9 @@ class CapacityTest(EngineTestCase, unittest.TestCase):
         res = self.plan(cat, programs([all_group("G", ["A", "B", "C", "D", "E"])]), student(num_terms=2, cap=8))
         self.assertInfeasible(res, "E_INFEASIBLE")
         msg = res.plan["errors"][0]["message"]
-        self.assertIn("과목 학점 조합상", msg)
-        self.assertIn("최대 7+7", msg)
-        self.assertNotIn("최소 학기 상한", msg)
+        self.assertIn("course credit sizes", msg)
+        self.assertIn("credit sizes: 7+7", msg)
+        self.assertNotIn("per-term cap of at least", msg)
 
     def test_greedy_packs_to_exact_cap(self):
         # 4,4,3,3 in 2 terms with cap 7: only feasible if paired as 4+3 / 4+3
@@ -116,7 +116,7 @@ class ExactSearchTest(EngineTestCase, unittest.TestCase):
         with mock.patch("engine.scheduler.EXACT_NODE_LIMIT", 0):
             res = self.plan(cat, progs, student(num_terms=4, cap=5, start=(2026, "SPRING")), oracle=False)
         self.assertInfeasible(res, "E_INFEASIBLE")
-        self.assertIn("불가능이 증명된 것은 아님", res.plan["errors"][0]["message"])
+        self.assertIn("infeasibility is not proven", res.plan["errors"][0]["message"])
 
     def test_min_terms_even_when_greedy_succeeds(self):
         # given 8 terms, greedy "succeeds" with a 5-term placement, but the optimum is 4 terms. Exhaustive search must confirm whether a shorter one exists.
@@ -158,15 +158,15 @@ class ExactSearchTest(EngineTestCase, unittest.TestCase):
         self.assertInfeasible(res, "E_INFEASIBLE")
         errs = res.plan["errors"]
         self.assertEqual(len(errs), 1)
-        self.assertIn("모든 배치 조합을 탐색한 결과", errs[0]["message"])
-        self.assertNotIn("증명된 것은 아님", errs[0]["message"])
+        self.assertIn("Exhaustive search found no placement", errs[0]["message"])
+        self.assertNotIn("is not proven", errs[0]["message"])
 
     def test_proves_infeasible_with_precheck_bypassed(self):
         cat = catalog([course("A", 3, offered=S), course("B", 4, offered=S), course("C", 3, offered=F)])
         with mock.patch("engine.scheduler._precheck", return_value=[]):
             res = self.plan(cat, programs([all_group("G", ["A", "B", "C"])]), student(num_terms=2, cap=6))
         self.assertInfeasible(res, "E_INFEASIBLE")
-        self.assertIn("모든 배치 조합을 탐색한 결과", res.plan["errors"][0]["message"])
+        self.assertIn("Exhaustive search found no placement", res.plan["errors"][0]["message"])
 
     def test_unproven_candidate_is_flagged_even_if_representative_is_proven(self):
         # A real case from ISSUE-002. Two candidates: candidate 1 is proven infeasible by the precheck, candidate 2 is feasible (but greedy can't solve it).
@@ -186,7 +186,7 @@ class ExactSearchTest(EngineTestCase, unittest.TestCase):
             res = self.plan(cat, progs, stu, oracle=False)
         self.assertFalse(res.plan["feasible"])
         self.assertEqual(res.candidates, 2)
-        self.assertIn("전수탐색 한도를 넘어 판정하지 못함", res.plan["errors"][-1]["message"])
+        self.assertIn("hit the exhaustive-search limit and were left undecided", res.plan["errors"][-1]["message"])
 
 
 class GreedyFailureDiagnosisTest(EngineTestCase, unittest.TestCase):
@@ -202,10 +202,10 @@ class GreedyFailureDiagnosisTest(EngineTestCase, unittest.TestCase):
         res = self.run_bypassed(cat, programs([all_group("G", ["A", "B", "C"])]), student(num_terms=2, cap=6))
         self.assertInfeasible(res, "E_INFEASIBLE")
         errs = res.plan["errors"]
-        self.assertIn("불가능이 증명된 것은 아님", errs[0]["message"])
+        self.assertIn("infeasibility is not proven", errs[0]["message"])
         self.assertEqual(errs[0]["courses"], ["A"])  # B(4) is placed first, leaving A unplaced
         self.assertEqual(len(errs), 2)
-        self.assertIn("학점 상한에 걸림", errs[1]["message"])
+        self.assertIn("already at the credit cap", errs[1]["message"])
         self.assertIn("2027 SPRING 4/6", errs[1]["message"])
 
     def test_diagnose_skips_blocked_descendants(self):

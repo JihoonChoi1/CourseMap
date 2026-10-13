@@ -473,7 +473,7 @@ def limit_sweep_cases(instances: int, seed: int, max_limit: int = 30) -> list:
 
 
 WEIRD = ["A\"B", "back\\slash", "tab\tX", "nl\nX", "cr\rX", "bs\bX", "ff\fX", "nul\x00X", "esc\x1bX",
-         "del\x7fX", "ls\u2028X", "ps\u2029X", "한글과목", "emoji😀", "é", "<&>", "/slash", "+plus", ",comma", "|bar",
+         "del\x7fX", "ls\u2028X", "ps\u2029X", "€uro", "emoji😀", "é", "<&>", "/slash", "+plus", ",comma", "|bar",
          " sp ", "→arrow", "{brace}", "'q'", "\u00a0nbsp"]
 
 
@@ -592,7 +592,7 @@ def heavy_cases(count: int, seed: int) -> list:
         line = encode(plan_case(*_heavy_instance(rng)))
         r = json.loads(python_result(line))
         hit = (r["plan"]["feasible"] and not r["min_terms_proven"]) or any(
-            "전수탐색이 한도" in e["message"] or "전수탐색 한도" in e["message"] for e in r["plan"]["errors"])
+            "Exhaustive search stopped" in e["message"] or "exhaustive-search limit" in e["message"] for e in r["plan"]["errors"])
         if hit:
             out.append(json.loads(line))
     return out

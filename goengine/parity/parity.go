@@ -87,14 +87,14 @@ func RunCase(line []byte) (string, error) {
 		case "student":
 			_, err = engine.ParseStudent(raw, c.Seasons, c.Where)
 		default:
-			return "", errors.New("알 수 없는 load 대상: " + c.Which)
+			return "", errors.New("unknown load target: " + c.Which)
 		}
 		if err != nil {
 			return inputError(err)
 		}
 		return engine.Dumps(engine.Obj().Set("ok", true), -1), nil
 	}
-	return "", errors.New("알 수 없는 케이스 종류: " + c.Kind)
+	return "", errors.New("unknown case kind: " + c.Kind)
 }
 
 func inputError(err error) (string, error) {

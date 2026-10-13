@@ -22,7 +22,7 @@ class WebPageTest(TestCase):
     def test_no_data_shows_guidance(self):
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "불러올 데이터가 없습니다")
+        self.assertContains(resp, "No data loaded")
         self.assertContains(resp, "load_data")
 
     def test_embeds_students_and_courses(self):

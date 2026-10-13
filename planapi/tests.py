@@ -149,10 +149,10 @@ class PlanEndpointTest(TestCase):
         self.assertEqual(self.get("S1").status_code, 500)
 
     def test_verify_failure_500(self):
-        with mock.patch("planapi.views.verify_plan", return_value=["가짜 위반"]):
+        with mock.patch("planapi.views.verify_plan", return_value=["fake violation"]):
             resp = self.get("S1")
         self.assertEqual(resp.status_code, 500)
-        self.assertEqual(resp.json()["violations"], ["가짜 위반"])
+        self.assertEqual(resp.json()["violations"], ["fake violation"])
 
 
 class ConvertTest(TestCase):
@@ -163,7 +163,7 @@ class ConvertTest(TestCase):
     def test_roundtrip_equals_files(self):
         f_catalog, f_programs, f_students = load_all(str(settings.DATA_DIR))
         d_catalog, d_programs = convert.load_catalog_programs()
-        self.assertEqual(d_catalog, f_catalog)      # includes order, Korean titles, CNF
+        self.assertEqual(d_catalog, f_catalog)      # includes order, titles, CNF
         self.assertEqual(d_programs, f_programs)
         for s in f_students:
             row = models.Student.objects.get(code=s.id)

@@ -28,19 +28,19 @@ class Command(BaseCommand):
         try:
             catalog, programs, students = load_all(options["data_dir"])
         except InputError as e:
-            raise CommandError("입력 오류: " + str(e))
+            raise CommandError("input error: " + str(e))
 
         seen = {}
         for s in students:
             if s.id in seen:
-                raise CommandError("학생 id 중복: " + s.id)
+                raise CommandError("duplicate student id: " + s.id)
             seen[s.id] = True
 
         with transaction.atomic():
             replace_all(catalog, programs, students)
 
-        self.stdout.write("적재 완료: 과목 " + str(len(catalog.courses)) + "개, 트랙 " + str(len(programs.tracks))
-                          + "개, 학생 " + str(len(students)) + "명")
+        self.stdout.write("loaded: " + str(len(catalog.courses)) + " courses, " + str(len(programs.tracks))
+                          + " tracks, " + str(len(students)) + " students")
         static = validate(catalog, programs)
         for e in static.errors:
-            self.stderr.write("경고(정적 검증): " + e.code + ": " + e.message)
+            self.stderr.write("warning (static validation): " + e.code + ": " + e.message)

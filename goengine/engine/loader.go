@@ -33,7 +33,7 @@ func DecodeJSON(data []byte) (any, error) {
 		return nil, err
 	}
 	if _, err := dec.Token(); err != io.EOF {
-		return nil, errors.New("JSON 뒤에 불필요한 데이터가 있음")
+		return nil, errors.New("extra data after the JSON value")
 	}
 	return v, nil
 }
@@ -42,39 +42,39 @@ func DecodeJSON(data []byte) (any, error) {
 func field(obj any, key, kind, where string) (any, error) {
 	m, ok := obj.(map[string]any)
 	if !ok {
-		return nil, inputErr(where + ": '" + key + "' 필드 없음")
+		return nil, inputErr(where + ": '" + key + "' field is missing")
 	}
 	value, ok := m[key]
 	if !ok {
-		return nil, inputErr(where + ": '" + key + "' 필드 없음")
+		return nil, inputErr(where + ": '" + key + "' field is missing")
 	}
 	switch kind {
 	case "int":
 		// Python: bool is a subtype of int, so it must be filtered out explicitly
 		if _, isBool := value.(bool); isBool {
-			return nil, inputErr(where + ": '" + key + "'는 int여야 함")
+			return nil, inputErr(where + ": '" + key + "' must be an int")
 		}
 		num, isNum := value.(json.Number)
 		if !isNum || strings.ContainsAny(string(num), ".eE") {
-			return nil, inputErr(where + ": '" + key + "' 타입 오류")
+			return nil, inputErr(where + ": '" + key + "' has the wrong type")
 		}
 		n, err := strconv.ParseInt(string(num), 10, 64)
 		if err != nil {
 			// Python int has no size limit. This is the one place behavior differs from Python (docs/phase5_go_port.md).
-			return nil, inputErr(where + ": '" + key + "' 정수 범위 초과")
+			return nil, inputErr(where + ": '" + key + "' is out of integer range")
 		}
 		return int(n), nil
 	case "str":
 		if _, isStr := value.(string); !isStr {
-			return nil, inputErr(where + ": '" + key + "' 타입 오류")
+			return nil, inputErr(where + ": '" + key + "' has the wrong type")
 		}
 	case "list":
 		if _, isList := value.([]any); !isList {
-			return nil, inputErr(where + ": '" + key + "' 타입 오류")
+			return nil, inputErr(where + ": '" + key + "' has the wrong type")
 		}
 	case "dict":
 		if _, isDict := value.(map[string]any); !isDict {
-			return nil, inputErr(where + ": '" + key + "' 타입 오류")
+			return nil, inputErr(where + ": '" + key + "' has the wrong type")
 		}
 	}
 	return value, nil
@@ -113,7 +113,7 @@ func strList(obj any, key, where string) ([]string, error) {
 	for _, v := range values {
 		s, ok := v.(string)
 		if !ok {
-			return nil, inputErr(where + ": '" + key + "'는 문자열 리스트여야 함")
+			return nil, inputErr(where + ": '" + key + "' must be a list of strings")
 		}
 		out = append(out, s)
 	}
@@ -129,13 +129,13 @@ func cnf(obj any, key, where string) ([][]string, error) {
 	for _, clause := range clauses {
 		list, ok := clause.([]any)
 		if !ok {
-			return nil, inputErr(where + ": '" + key + "'는 [][]string이어야 함")
+			return nil, inputErr(where + ": '" + key + "' must be a list of string lists")
 		}
 		cl := []string{}
 		for _, v := range list {
 			s, ok := v.(string)
 			if !ok {
-				return nil, inputErr(where + ": '" + key + "'는 [][]string이어야 함")
+				return nil, inputErr(where + ": '" + key + "' must be a list of string lists")
 			}
 			cl = append(cl, s)
 		}
@@ -148,11 +148,11 @@ func readJSON(path string) (any, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		// the text inside the parentheses (the OS error text) differs from Python's
-		return nil, inputErr(path + ": 읽을 수 없음 (" + err.Error() + ")")
+		return nil, inputErr(path + ": cannot read (" + err.Error() + ")")
 	}
 	v, err := DecodeJSON(data)
 	if err != nil {
-		return nil, inputErr(path + ": JSON 파싱 실패 (" + err.Error() + ")")
+		return nil, inputErr(path + ": invalid JSON (" + err.Error() + ")")
 	}
 	return v, nil
 }
@@ -171,7 +171,7 @@ func ParseCatalog(raw any) (*Catalog, error) {
 		return nil, err
 	}
 	if len(seasons) == 0 {
-		return nil, inputErr("catalog: 'seasons'가 비어 있음")
+		return nil, inputErr("catalog: 'seasons' is empty")
 	}
 	rawCourses, err := fieldList(raw, "courses", "catalog")
 	if err != nil {
@@ -324,13 +324,13 @@ func ParseStudent(rs any, seasons []string, where string) (*Student, error) {
 		return nil, err
 	}
 	if !contains(seasons, s.StartSeason) {
-		return nil, inputErr(where + ": 알 수 없는 start_term.season '" + s.StartSeason + "'")
+		return nil, inputErr(where + ": unknown start_term.season '" + s.StartSeason + "'")
 	}
 	if s.NumTerms < 1 {
-		return nil, inputErr(where + ": num_terms는 1 이상이어야 함")
+		return nil, inputErr(where + ": num_terms must be at least 1")
 	}
 	if s.MaxCredits < 1 {
-		return nil, inputErr(where + ": max_credits_per_term은 1 이상이어야 함")
+		return nil, inputErr(where + ": max_credits_per_term must be at least 1")
 	}
 	return s, nil
 }

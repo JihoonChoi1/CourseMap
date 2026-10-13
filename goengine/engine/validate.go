@@ -31,20 +31,20 @@ func checkCourses(catalog *Catalog, errs *[]EngineError) {
 	seen := map[string]bool{}
 	for _, c := range catalog.Courses {
 		if seen[c.ID] {
-			*errs = append(*errs, EngineError{"E_DUP_ID", "과목 id 중복: " + c.ID, []string{c.ID}})
+			*errs = append(*errs, EngineError{"E_DUP_ID", "Duplicate course id: " + c.ID, []string{c.ID}})
 		}
 		seen[c.ID] = true
 
 		if c.Credits <= 0 {
-			*errs = append(*errs, EngineError{"E_BAD_CREDITS", c.ID + ": credits=" + itoa(c.Credits) + " (0보다 커야 함)", []string{c.ID}})
+			*errs = append(*errs, EngineError{"E_BAD_CREDITS", c.ID + ": credits=" + itoa(c.Credits) + " (must be greater than 0)", []string{c.ID}})
 		}
 
 		if len(c.Offered) == 0 {
-			*errs = append(*errs, EngineError{"E_BAD_OFFERED", c.ID + ": offered가 비어 있음", []string{c.ID}})
+			*errs = append(*errs, EngineError{"E_BAD_OFFERED", c.ID + ": offered is empty", []string{c.ID}})
 		}
 		for _, s := range c.Offered {
 			if !contains(catalog.Seasons, s) {
-				*errs = append(*errs, EngineError{"E_BAD_OFFERED", c.ID + ": 알 수 없는 season '" + s + "'", []string{c.ID}})
+				*errs = append(*errs, EngineError{"E_BAD_OFFERED", c.ID + ": unknown season '" + s + "'", []string{c.ID}})
 			}
 		}
 
@@ -55,13 +55,13 @@ func checkCourses(catalog *Catalog, errs *[]EngineError) {
 			}
 			for _, clause := range clauses {
 				if len(clause) == 0 {
-					*errs = append(*errs, EngineError{"E_EMPTY_CLAUSE", c.ID + ": " + kind + "에 빈 OR clause", []string{c.ID}})
+					*errs = append(*errs, EngineError{"E_EMPTY_CLAUSE", c.ID + ": " + kind + " has an empty OR clause", []string{c.ID}})
 				}
 				for _, x := range clause {
 					if x == c.ID {
-						*errs = append(*errs, EngineError{"E_SELF_REF", c.ID + ": 자기 자신을 " + kind + "로 참조", []string{c.ID}})
+						*errs = append(*errs, EngineError{"E_SELF_REF", c.ID + ": lists itself as its own " + kind, []string{c.ID}})
 					} else if _, ok := catalog.ByID[x]; !ok {
-						*errs = append(*errs, EngineError{"E_UNKNOWN_REF", c.ID + ": " + kind + "에 없는 과목 '" + x + "'", []string{c.ID}})
+						*errs = append(*errs, EngineError{"E_UNKNOWN_REF", c.ID + ": " + kind + " references an unknown course '" + x + "'", []string{c.ID}})
 					}
 				}
 			}
@@ -73,7 +73,7 @@ func checkPrograms(catalog *Catalog, programs *Programs, errs *[]EngineError) {
 	trackSeen := map[string]bool{programs.Degree.ID: true}
 	for _, t := range programs.Tracks {
 		if trackSeen[t.ID] {
-			*errs = append(*errs, EngineError{"E_DUP_ID", "트랙 id 중복: " + t.ID, []string{}})
+			*errs = append(*errs, EngineError{"E_DUP_ID", "Duplicate track id: " + t.ID, []string{}})
 		}
 		trackSeen[t.ID] = true
 	}
@@ -85,13 +85,13 @@ func checkPrograms(catalog *Catalog, programs *Programs, errs *[]EngineError) {
 		for _, g := range p.Groups {
 			where := p.ID + "." + g.ID
 			if groupSeen[g.ID] {
-				*errs = append(*errs, EngineError{"E_DUP_ID", "그룹 id 중복: " + g.ID, []string{}})
+				*errs = append(*errs, EngineError{"E_DUP_ID", "Duplicate group id: " + g.ID, []string{}})
 			}
 			groupSeen[g.ID] = true
 
 			if g.Rule == "PICK_N" {
 				if g.N < 1 || g.N > len(g.Courses) {
-					*errs = append(*errs, EngineError{"E_BAD_PICK_N", where + ": n=" + itoa(g.N) + ", 과목 수=" + itoa(len(g.Courses)), []string{}})
+					*errs = append(*errs, EngineError{"E_BAD_PICK_N", where + ": n=" + itoa(g.N) + ", course count=" + itoa(len(g.Courses)), []string{}})
 				}
 			} else if g.Rule != "ALL" {
 				*errs = append(*errs, EngineError{"E_UNKNOWN_RULE", where + ": rule '" + g.Rule + "'", []string{}})
@@ -99,7 +99,7 @@ func checkPrograms(catalog *Catalog, programs *Programs, errs *[]EngineError) {
 
 			for _, cid := range g.Courses {
 				if _, ok := catalog.ByID[cid]; !ok {
-					*errs = append(*errs, EngineError{"E_UNKNOWN_REF", where + ": 없는 과목 '" + cid + "'", []string{cid}})
+					*errs = append(*errs, EngineError{"E_UNKNOWN_REF", where + ": unknown course '" + cid + "'", []string{cid}})
 				}
 			}
 		}
@@ -254,8 +254,8 @@ func checkGraph(catalog *Catalog, errs *[]EngineError) [][]string {
 			path := append([]string{strictFrom}, pathWithin(strictTo, strictFrom, members, adj)...)
 			*errs = append(*errs, EngineError{
 				"E_CYCLE",
-				"순환 의존 (화살표 = 먼저 들어야 함): " + strings.Join(path, " → ") + ". " + strictFrom + "은(는) " +
-					strictTo + "의 prereq(엄격히 이전)이므로 모순",
+				"Circular dependency (arrow = must be taken first): " + strings.Join(path, " → ") + ". " + strictFrom + " is a prereq (strictly earlier) of " +
+					strictTo + ", so the cycle is a contradiction",
 				comp,
 			})
 			continue
@@ -276,7 +276,7 @@ func checkGraph(catalog *Catalog, errs *[]EngineError) [][]string {
 			}
 		}
 		if len(common) == 0 {
-			*errs = append(*errs, EngineError{"E_BUNDLE_NO_TERM", "번들 {" + strings.Join(comp, ", ") + "}의 공통 개설 학기가 없음", comp})
+			*errs = append(*errs, EngineError{"E_BUNDLE_NO_TERM", "Bundle {" + strings.Join(comp, ", ") + "} has no term in which all its courses are offered", comp})
 			continue
 		}
 		bundles = append(bundles, comp)

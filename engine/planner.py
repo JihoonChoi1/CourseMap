@@ -47,7 +47,7 @@ def plan_student(catalog: Catalog, programs: Programs, static: StaticResult, stu
         if t.id == student.track:
             track = t
     if track is None:
-        return _infeasible(student, [EngineError("E_UNKNOWN_TRACK", student.id + ": 트랙 '" + student.track + "' 없음")])
+        return _infeasible(student, [EngineError("E_UNKNOWN_TRACK", student.id + ": unknown track '" + student.track + "'")])
 
     completed = {}
     unknown = []
@@ -57,7 +57,7 @@ def plan_student(catalog: Catalog, programs: Programs, static: StaticResult, stu
         completed[cid] = True
     if len(unknown) > 0:
         return _infeasible(student, [EngineError(
-            "E_UNKNOWN_REF", student.id + ": completed에 없는 과목 " + ", ".join(unknown), unknown)])
+            "E_UNKNOWN_REF", student.id + ": completed lists unknown courses: " + ", ".join(unknown), unknown)])
 
     cal = make_calendar(catalog, student)
     groups = programs.degree.groups + track.groups
@@ -96,7 +96,7 @@ def plan_student(catalog: Catalog, programs: Programs, static: StaticResult, stu
         if len(candidates) > 1:
             errors.append(EngineError(
                 "E_INFEASIBLE",
-                "PICK_N/OR 선택 조합 " + str(len(candidates)) + "개 모두 실패. 위 원인은 가장 근접한 조합 기준: "
+                "All " + str(len(candidates)) + " PICK_N/OR combinations failed. The cause above is for the closest one: "
                 + _picks_label(best.picks),
             ))
         # The two cases below are not proof of "infeasible". Flag them even if the representative
@@ -104,13 +104,13 @@ def plan_student(catalog: Catalog, programs: Programs, static: StaticResult, stu
         if unproven > 0 and best_res.proven:
             errors.append(EngineError(
                 "E_INFEASIBLE",
-                "주의: 조합 " + str(unproven) + "개는 전수탐색 한도를 넘어 판정하지 못함 — 불가능이 증명된 것은 아님",
+                "Note: " + str(unproven) + " combinations hit the exhaustive-search limit and were left undecided — infeasibility is not proven",
             ))
         if used_fallback:
             errors.append(EngineError(
                 "E_INFEASIBLE",
-                "주의: PICK_N/OR 선택 조합이 " + str(targets.MAX_CANDIDATES) + "개를 넘어 비용 기준 조합 1개만 시도함 "
-                + "— 다른 조합으로는 가능할 수 있으므로 불가능이 증명된 것은 아님",
+                "Note: there are more than " + str(targets.MAX_CANDIDATES) + " PICK_N/OR combinations, so only the cheapest one was tried "
+                + "— another combination might work, so infeasibility is not proven",
             ))
         res = _infeasible(student, errors)
         res.candidates = len(candidates)
@@ -151,7 +151,7 @@ def _picks_label(picks: dict[str, list[str]]) -> str:
     for gid in picks:
         parts.append(gid + "=[" + ", ".join(picks[gid]) + "]")
     if len(parts) == 0:
-        return "(선택 없음)"
+        return "(no choices)"
     return ", ".join(parts)
 
 

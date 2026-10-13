@@ -69,11 +69,11 @@ class GoEngineJobTest(AsyncTestCase):
         self.assertEqual(body["status"], "SUCCESS", body["error"])
 
     def test_verify_runs_on_go_result(self):
-        with mock.patch("planapi.goengine.verify_plan", return_value=["가짜 위반"]):
+        with mock.patch("planapi.goengine.verify_plan", return_value=["fake violation"]):
             body = self.run_job("S1")
         self.assertEqual(body["status"], "FAILED")
         self.assertEqual(body["error"]["code"], "VERIFY_FAILED")
-        self.assertEqual(body["error"]["violations"], ["가짜 위반"])
+        self.assertEqual(body["error"]["violations"], ["fake violation"])
 
 
 @override_settings(PLAN_ENGINE="go")
@@ -94,11 +94,11 @@ class GoEngineFailureTest(AsyncTestCase):
         self.assertIn("FileNotFoundError", body["error"]["detail"])
 
     def test_nonzero_exit_is_worker_error_with_stderr(self):
-        self.use_binary(fake_binary("cat > /dev/null; echo '입력 오류: 가짜' >&2; exit 2"))
+        self.use_binary(fake_binary("cat > /dev/null; echo 'input error: fake' >&2; exit 2"))
         body = self.run_job("S1")
         self.assertEqual(body["status"], "FAILED")
         self.assertEqual(body["error"]["code"], "WORKER_ERROR")
-        self.assertEqual(body["error"]["detail"], "GoEngineError: courseplan 종료 코드 2: 입력 오류: 가짜")
+        self.assertEqual(body["error"]["detail"], "GoEngineError: courseplan exit code 2: input error: fake")
 
     def test_soft_timeout_kills_go_process(self):
         # the worker's soft time limit works by a SIGUSR1 handler raising SoftTimeLimitExceeded.

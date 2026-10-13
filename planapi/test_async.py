@@ -215,7 +215,7 @@ class AsyncReuseTest(AsyncTestCase):
 
     def test_data_change_new_job(self):
         first = self.post("S1").json()["job_id"]
-        models.Course.objects.filter(code="CS101").update(title="바뀐 제목")
+        models.Course.objects.filter(code="CS101").update(title="Changed title")
         resp = self.post("S1")
         self.assertEqual(resp.status_code, 202)
         self.assertNotEqual(resp.json()["job_id"], first)
@@ -228,7 +228,7 @@ class AsyncReuseTest(AsyncTestCase):
         self.assertEqual(resp.json()["job_id"], first)
 
     def test_failed_job_is_not_reused(self):
-        with mock.patch("planapi.views.verify_plan", return_value=["가짜 위반"]):
+        with mock.patch("planapi.views.verify_plan", return_value=["fake violation"]):
             first = self.post("S1").json()["job_id"]
         self.assertEqual(self.job(first).json()["status"], "FAILED")
         resp = self.post("S1")
@@ -246,10 +246,10 @@ class AsyncFailureTest(AsyncTestCase):
         self.assertIsNotNone(body["finished_at"])
 
     def test_verify_failure(self):
-        with mock.patch("planapi.views.verify_plan", return_value=["가짜 위반"]):
+        with mock.patch("planapi.views.verify_plan", return_value=["fake violation"]):
             body = self.run_job("S1")
         self.assert_failed(body, "VERIFY_FAILED")
-        self.assertEqual(body["error"]["violations"], ["가짜 위반"])
+        self.assertEqual(body["error"]["violations"], ["fake violation"])
 
     def test_worker_exception(self):
         with mock.patch("planapi.views.plan_student", side_effect=RuntimeError("boom")):

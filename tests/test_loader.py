@@ -63,7 +63,7 @@ class LoaderTest(unittest.TestCase):
 
     def test_catalog_cnf_shape(self):
         c = {"id": "A", "title": "A", "credits": 3, "offered": SF, "prereqs": ["B"], "coreqs": []}
-        with self.assertRaisesRegex(InputError, r"\[\]\[\]string"):
+        with self.assertRaisesRegex(InputError, "must be a list of string lists"):
             load_catalog(self.write({"seasons": SF, "courses": [c]}))
 
     def test_catalog_empty_seasons(self):
@@ -88,7 +88,7 @@ class LoaderTest(unittest.TestCase):
             load_catalog(self.write(None, raw="{not json"))
 
     def test_missing_file(self):
-        with self.assertRaisesRegex(InputError, "읽을 수 없음"):
+        with self.assertRaisesRegex(InputError, "cannot read"):
             load_catalog(os.path.join(self.tmp.name, "nope.json"))
 
 

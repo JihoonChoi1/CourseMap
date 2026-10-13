@@ -22,7 +22,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         days = options["days"]
         if days < 0:
-            raise CommandError("--days는 0 이상이어야 함")
+            raise CommandError("--days must be at least 0")
         cutoff = timezone.now() - timedelta(days=days)
         n, _ = PlanJob.objects.filter(created_at__lt=cutoff).delete()
-        self.stdout.write("삭제: job " + str(n) + "개 (" + cutoff.isoformat() + " 이전 생성)")
+        self.stdout.write("deleted " + str(n) + " job(s) (created before " + cutoff.isoformat() + ")")

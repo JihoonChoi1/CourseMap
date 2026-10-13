@@ -17,6 +17,6 @@ class Command(BaseCommand):
         try:
             created = s3export.ensure_bucket()
         except (BotoCoreError, ClientError) as e:
-            raise CommandError("버킷 확인/생성 실패: " + type(e).__name__ + ": " + str(e))
+            raise CommandError("failed to check/create the bucket: " + type(e).__name__ + ": " + str(e))
         where = str(settings.S3_ENDPOINT_URL or "AWS S3")
-        self.stdout.write(("생성: " if created else "이미 있음: ") + settings.S3_BUCKET + " (" + where + ")")
+        self.stdout.write(("created: " if created else "already exists: ") + settings.S3_BUCKET + " (" + where + ")")

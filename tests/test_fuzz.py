@@ -87,7 +87,7 @@ class FuzzTest(unittest.TestCase):
                                                      stu.max_credits))
                 else:
                     for e in res.plan["errors"]:
-                        self.assertNotIn("증명된 것은 아님", e["message"])
+                        self.assertNotIn("is not proven", e["message"])
         # check the generator produces a meaningful distribution (the test would be vacuous if everything were a static error/infeasible)
         self.assertGreater(checked, INSTANCES * 0.9)
         self.assertGreater(feasible, checked * 0.3)

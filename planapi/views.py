@@ -91,7 +91,7 @@ def prepare(student_id: str, query_params) -> Prepared:
 
     row = models.Student.objects.filter(code=student_id).first()
     if row is None:
-        raise RequestError(404, "학생 없음: " + student_id)
+        raise RequestError(404, "no such student: " + student_id)
 
     params = {}
     overrides = {}
@@ -101,7 +101,7 @@ def prepare(student_id: str, query_params) -> Prepared:
         if raw is None:
             continue
         if not INT_RE.match(raw):
-            raise RequestError(400, param + "는 정수여야 함: '" + raw + "'")
+            raise RequestError(400, param + " must be an integer: '" + raw + "'")
         params[param] = int(raw)
         overrides[field] = int(raw)
     raw_student = convert.student_raw(row, overrides)
@@ -133,7 +133,7 @@ def compute(catalog: Catalog, programs: Programs, student: EngineStudent) -> tup
     return res, violations
 
 
-VERIFY_FAILED_DETAIL = "엔진 결과가 독립 검증을 통과하지 못함 (엔진 버그)"
+VERIFY_FAILED_DETAIL = "the engine result failed independent verification (engine bug)"
 
 
 class StudentPlanView(APIView):
@@ -170,7 +170,7 @@ class StudentPlanJobView(APIView):
                 run_plan_job.apply_async(args=[str(job.id)], queue=settings.CELERY_TASK_DEFAULT_QUEUE)
             except OperationalError as e:
                 job.delete()
-                return Response({"detail": "작업 큐에 넣지 못함 (Redis 연결 확인): " + str(e)}, status=503)
+                return Response({"detail": "could not enqueue the job (check the Redis connection): " + str(e)}, status=503)
 
         resp = Response({"job_id": str(job.id), "status": job.status}, status=202 if created else 200)
         resp["Location"] = reverse("plan-job", args=[str(job.id)])
@@ -187,7 +187,7 @@ class PlanJobView(APIView):
         if key is not None:
             job = models.PlanJob.objects.filter(id=key).first()
         if job is None:
-            return Response({"detail": "job 없음: " + job_id}, status=404)
+            return Response({"detail": "no such job: " + job_id}, status=404)
         return Response(jobs.job_dict(job), status=200)
 
 

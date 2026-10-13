@@ -138,8 +138,8 @@ func precheck(g *UnitGraph, cal *Calendar, capacity int, es, crit []int) []Engin
 			for _, cid := range unit.Courses {
 				errs = append(errs, EngineError{
 					"E_NOT_OFFERED",
-					cid + ": " + strings.Join(unit.Offered, "/") + " 개설 과목인데 남은 학기(" + strings.Join(horizonLabels, ", ") +
-						")에 해당 학기가 없음",
+					cid + ": " + strings.Join(unit.Offered, "/") + " only, but the remaining terms (" + strings.Join(horizonLabels, ", ") +
+						") include none of them",
 					[]string{cid},
 				})
 			}
@@ -148,13 +148,13 @@ func precheck(g *UnitGraph, cal *Calendar, capacity int, es, crit []int) []Engin
 			if len(unit.Courses) > 1 {
 				errs = append(errs, EngineError{
 					"E_BUNDLE_OVER_CAP",
-					"번들 {" + strings.Join(unit.Courses, ", ") + "} 합계 " + itoa(unit.Credits) + "학점 > 학기 상한 " + itoa(capacity),
+					"Bundle {" + strings.Join(unit.Courses, ", ") + "} totals " + itoa(unit.Credits) + " credits > per-term cap " + itoa(capacity),
 					append([]string{}, unit.Courses...),
 				})
 			} else {
 				errs = append(errs, EngineError{
 					"E_COURSE_OVER_CAP",
-					unit.ID + ": " + itoa(unit.Credits) + "학점 > 학기 상한 " + itoa(capacity),
+					unit.ID + ": " + itoa(unit.Credits) + " credits > per-term cap " + itoa(capacity),
 					append([]string{}, unit.Courses...),
 				})
 			}
@@ -183,8 +183,8 @@ func precheck(g *UnitGraph, cal *Calendar, capacity int, es, crit []int) []Engin
 		}
 		errs = append(errs, EngineError{
 			"E_INFEASIBLE",
-			unit.ID + ": 선수과목 체인과 개설 학기상 빨라야 " + TermLabel(cal, es[u]) + "에 수강 가능하지만 계획은 " +
-				TermLabel(cal, last) + "까지. 최단 체인: " + strings.Join(chain, " → "),
+			unit.ID + ": the prerequisite chain and term offerings make it available no earlier than " + TermLabel(cal, es[u]) + ", but the plan ends in " +
+				TermLabel(cal, last) + ". Shortest chain: " + strings.Join(chain, " → "),
 			append([]string{}, unit.Courses...),
 		})
 	}
@@ -231,7 +231,7 @@ func precheck(g *UnitGraph, cal *Calendar, capacity int, es, crit []int) []Engin
 			if load <= supply {
 				continue
 			}
-				// narrowest window; if tied on width, the one with the bigger overage becomes the representative
+			// narrowest window; if tied on width, the one with the bigger overage becomes the representative
 			if !found || span < bestB-bestA+1 || (span == bestB-bestA+1 && load-supply > bestLoad-bestSupply) {
 				found = true
 				bestA, bestB, bestLoad, bestMembers, bestSupply = a, b, load, members, supply
@@ -255,34 +255,34 @@ func precheck(g *UnitGraph, cal *Calendar, capacity int, es, crit []int) []Engin
 		span := b - a + 1
 		var where string
 		if a == b {
-			where = TermLabel(cal, a) + "에 반드시 배치해야 하는 과목"
+			where = "courses that must be placed in " + TermLabel(cal, a)
 		} else {
-			where = TermLabel(cal, a) + " ~ " + TermLabel(cal, b) + " (" + itoa(span) + "학기) 안에 반드시 배치해야 하는 과목"
+			where = "courses that must be placed within " + TermLabel(cal, a) + " ~ " + TermLabel(cal, b) + " (" + itoa(span) + " terms)"
 		}
 		var limit string
 		if bestLoad > capacity*span { // easier to read when a plain "term count × cap" explains it
 			if span == 1 {
-				limit = "학기 상한 " + itoa(capacity)
+				limit = "per-term cap " + itoa(capacity)
 			} else {
-				limit = itoa(span) + "학기 × 상한 " + itoa(capacity) + " = " + itoa(supply)
+				limit = itoa(span) + " terms × cap " + itoa(capacity) + " = " + itoa(supply)
 			}
 		} else {
 			fills := []string{}
 			for t := a; t <= b; t++ {
 				fills = append(fills, itoa(fill[t]))
 			}
-			limit = "채울 수 있는 최대 " + itoa(supply) + "학점 (과목 학점 조합상 학기별 최대 " + strings.Join(fills, "+") +
-				", 상한 " + itoa(capacity) + ")"
+			limit = "at most " + itoa(supply) + " credits that can actually fit (per-term max given course credit sizes: " + strings.Join(fills, "+") +
+				", cap " + itoa(capacity) + ")"
 		}
 		var hint string
 		if minCap > capacity {
-			hint = ". 이 선택 조합에 필요한 최소 학기 상한은 " + itoa(minCap) + " 이상"
+			hint = ". This combination needs a per-term cap of at least " + itoa(minCap)
 		} else {
-			hint = ". 평균으로는 상한이 충분하지만 과목 학점 조합상 학기마다 상한을 꽉 채울 수 없음"
+			hint = ". The cap is enough on average, but course credit sizes keep the terms from being filled to the cap"
 		}
 		errs = append(errs, EngineError{
 			"E_INFEASIBLE",
-			"학점 부족: " + where + " " + strings.Join(parts, " + ") + " = " + itoa(bestLoad) + "학점 > " + limit + hint,
+			"Not enough room: " + where + ": " + strings.Join(parts, " + ") + " = " + itoa(bestLoad) + " credits > " + limit + hint,
 			courses,
 		})
 	}
@@ -597,9 +597,9 @@ func exactProofError(g *UnitGraph, cal *Calendar, greedyTerm []int) EngineError 
 	}
 	return EngineError{
 		"E_INFEASIBLE",
-		"모든 배치 조합을 탐색한 결과 " + TermLabel(cal, cal.NumTerms-1) + "까지 배치 불가능 " +
-			"(개설 학기·선수과목·학점 상한이 함께 걸려 단순 학점 합계로는 드러나지 않는 경우). " +
-			"그리디 배치 기준으로 남는 과목: " + strings.Join(left, ", "),
+		"Exhaustive search found no placement that finishes by " + TermLabel(cal, cal.NumTerms-1) + " " +
+			"(term offerings, prerequisites, and the credit cap interact in a way credit totals alone don't show). " +
+			"Courses left over by the greedy placement: " + strings.Join(left, ", "),
 		left,
 	}
 }
@@ -664,19 +664,19 @@ func diagnose(g *UnitGraph, catalog *Catalog, cal *Calendar, capacity int, compl
 		}
 		var msg string
 		if len(slots) == 0 {
-			msg = unit.ID + ": 선수과목이 " + TermLabel(cal, readyFrom) + "부터 충족되는데 이후 계획 기간 안에 " +
-				strings.Join(unit.Offered, "/") + " 학기가 없음"
+			msg = unit.ID + ": prerequisites are met from " + TermLabel(cal, readyFrom) + ", but no " +
+				strings.Join(unit.Offered, "/") + " term remains in the plan after that"
 		} else {
-			msg = unit.ID + "(" + itoa(unit.Credits) + "학점): 선수과목은 " + TermLabel(cal, readyFrom) +
-				"부터 충족되지만 이후 개설 학기가 모두 학점 상한에 걸림 [" + strings.Join(slots, ", ") + "]"
+			msg = unit.ID + "(" + itoa(unit.Credits) + " credits): prerequisites are met from " + TermLabel(cal, readyFrom) +
+				", but every later term it is offered in is already at the credit cap [" + strings.Join(slots, ", ") + "]"
 		}
 		details = append(details, EngineError{"E_INFEASIBLE", msg, append([]string{}, unit.Courses...)})
 	}
 
 	summary := EngineError{
 		"E_INFEASIBLE",
-		"배치안을 찾지 못함. 미배치: " + strings.Join(unplaced, ", ") +
-			". (전수탐색이 한도 " + itoa(exactNodeLimit) + "를 넘어 중단되었으므로 불가능이 증명된 것은 아님)",
+		"No placement found. Unplaced: " + strings.Join(unplaced, ", ") +
+			". (Exhaustive search stopped after exceeding its limit of " + itoa(exactNodeLimit) + " nodes, so infeasibility is not proven)",
 		unplaced,
 	}
 	return append([]EngineError{summary}, details...)
