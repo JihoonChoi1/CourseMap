@@ -1,0 +1,1273 @@
+{
+ "captured_at": "2026-10-13T21:26:24+00:00",
+ "commit": "6db5b5f",
+ "branch": "english-demo",
+ "dirty": false,
+ "versions": {
+  "python": "Python 3.14.8",
+  "django": "6.0.8",
+  "celery": "5.6.3 (recovery)",
+  "go": "go version go1.27.1 darwin/arm64",
+  "mysql": "8.4.11",
+  "redis": "7.4.11",
+  "s3": "RustFS (docker compose service s3)"
+ },
+ "setup": {
+  "sync_engine": "python (in the Django request)",
+  "job_engine": "go (Celery worker, PLAN_ENGINE=go; the result is verified by the Python verifier)",
+  "go_invocations": [
+   "--stdin-snapshot"
+  ],
+  "redacted": [
+   "export.url: the presigned S3 URL is replaced with null (it carries the local access key id and a signature). export_check records that it was downloaded first."
+  ]
+ },
+ "inputs": {
+  "data_dir": "data/ubc",
+  "courses": [
+   {
+    "id": "CPSC 110",
+    "title": "Computation, Programs, and Programming",
+    "credits": 4,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 121",
+    "title": "Models of Computation",
+    "credits": 4,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 210",
+    "title": "Software Construction",
+    "credits": 4,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 213",
+    "title": "Introduction to Computer Systems",
+    "credits": 4,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 221",
+    "title": "Basic Algorithms and Data Structures",
+    "credits": 4,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 310",
+    "title": "Introduction to Software Engineering",
+    "credits": 4,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 313",
+    "title": "Computer Hardware and Operating Systems",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 320",
+    "title": "Intermediate Algorithm Design and Analysis",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 304",
+    "title": "Introduction to Relational Databases",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 317",
+    "title": "Introduction to Computer Networking",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 319",
+    "title": "Software Engineering Project",
+    "credits": 4,
+    "offered": [
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 322",
+    "title": "Introduction to Artificial Intelligence",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 330",
+    "title": "Applied Machine Learning",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 340",
+    "title": "Machine Learning and Data Mining",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 344",
+    "title": "Introduction to Human Computer Interaction Methods",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 404",
+    "title": "Advanced Relational Databases",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 410",
+    "title": "Advanced Software Engineering",
+    "credits": 3,
+    "offered": [
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 415",
+    "title": "Operating Systems Design and Implementation",
+    "credits": 4,
+    "offered": [
+     "W1"
+    ]
+   },
+   {
+    "id": "CPSC 416",
+    "title": "Distributed Systems",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 417",
+    "title": "Computer Networking",
+    "credits": 3,
+    "offered": [
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 418",
+    "title": "Parallel Computation",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 423",
+    "title": "Natural Language Processing",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 425",
+    "title": "Computer Vision",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "CPSC 440",
+    "title": "Advanced Machine Learning",
+    "credits": 3,
+    "offered": [
+     "W2"
+    ]
+   },
+   {
+    "id": "MATH 100",
+    "title": "Differential Calculus with Applications",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "MATH 101",
+    "title": "Integral Calculus with Applications",
+    "credits": 3,
+    "offered": [
+     "W2"
+    ]
+   },
+   {
+    "id": "MATH 111",
+    "title": "Matrix Algebra",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "MATH 200",
+    "title": "Calculus III",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "MATH 221",
+    "title": "Matrix Algebra",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   },
+   {
+    "id": "STAT 251",
+    "title": "Introductory Probability and Statistics",
+    "credits": 3,
+    "offered": [
+     "W1",
+     "W2"
+    ]
+   }
+  ],
+  "tracks": [
+   {
+    "id": "AI_ML",
+    "name": "AI/ML Engineer (project-defined, not an official UBC track)"
+   },
+   {
+    "id": "SYSTEMS",
+    "name": "Systems/Infrastructure Engineer (project-defined, not an official UBC track)"
+   },
+   {
+    "id": "SOFTWARE",
+    "name": "Software/Web Developer (project-defined, not an official UBC track)"
+   }
+  ],
+  "groups": [
+   {
+    "id": "CPSC_CORE",
+    "name": "CPSC core (years 1-4)"
+   },
+   {
+    "id": "MATH_CORE",
+    "name": "MATH/STAT core"
+   },
+   {
+    "id": "LINEAR_ALGEBRA",
+    "name": "MATH 111 or 221"
+   },
+   {
+    "id": "UPPER_ELECTIVE",
+    "name": "CPSC 300+: 18 credits, 9 at 400+ (6 courses)"
+   },
+   {
+    "id": "UPPER_400",
+    "name": "of which 400+: 9 credits (3 courses)"
+   },
+   {
+    "id": "AI_CORE",
+    "name": "AI track core"
+   },
+   {
+    "id": "AI_ELECTIVE",
+    "name": "AI track elective"
+   },
+   {
+    "id": "SYS_CORE",
+    "name": "Systems track core"
+   },
+   {
+    "id": "SYS_ELECTIVE",
+    "name": "Systems track elective"
+   },
+   {
+    "id": "SW_CORE",
+    "name": "Software track core"
+   },
+   {
+    "id": "SW_ELECTIVE",
+    "name": "Software track elective"
+   }
+  ],
+  "students": [
+   {
+    "id": "U1",
+    "name": "First-year (AI/ML) — four years from 2026 W1",
+    "track": "AI_ML",
+    "completed": [],
+    "start_term": {
+     "year": 2026,
+     "season": "W1"
+    },
+    "num_terms": 8,
+    "max_credits_per_term": 15
+   },
+   {
+    "id": "U2",
+    "name": "Entering 2nd year (Systems) — first-year requirements done",
+    "track": "SYSTEMS",
+    "completed": [
+     "CPSC 110",
+     "CPSC 121",
+     "MATH 100",
+     "MATH 101"
+    ],
+    "start_term": {
+     "year": 2027,
+     "season": "W1"
+    },
+    "num_terms": 6,
+    "max_credits_per_term": 15
+   },
+   {
+    "id": "U3",
+    "name": "Entering 3rd year (AI/ML) — took linear algebra as MATH 111",
+    "track": "AI_ML",
+    "completed": [
+     "CPSC 110",
+     "CPSC 121",
+     "CPSC 210",
+     "CPSC 213",
+     "CPSC 221",
+     "MATH 100",
+     "MATH 101",
+     "MATH 111",
+     "MATH 200",
+     "STAT 251"
+    ],
+    "start_term": {
+     "year": 2028,
+     "season": "W1"
+    },
+    "num_terms": 4,
+    "max_credits_per_term": 15
+   },
+   {
+    "id": "U4",
+    "name": "3rd-year part-time (Software) — infeasible at 6 credits per term",
+    "track": "SOFTWARE",
+    "completed": [
+     "CPSC 110",
+     "CPSC 121",
+     "CPSC 210",
+     "CPSC 213",
+     "CPSC 221",
+     "MATH 100",
+     "MATH 101",
+     "MATH 200",
+     "MATH 221",
+     "STAT 251"
+    ],
+    "start_term": {
+     "year": 2028,
+     "season": "W1"
+    },
+    "num_terms": 4,
+    "max_credits_per_term": 6
+   },
+   {
+    "id": "U5",
+    "name": "Final term (Software) — put off math; MATH 101 is W2-only, so one W1 term is not enough",
+    "track": "SOFTWARE",
+    "completed": [
+     "CPSC 110",
+     "CPSC 121",
+     "CPSC 210",
+     "CPSC 213",
+     "CPSC 221",
+     "CPSC 310",
+     "CPSC 313",
+     "CPSC 320",
+     "MATH 100",
+     "MATH 221",
+     "CPSC 304",
+     "CPSC 317",
+     "CPSC 319",
+     "CPSC 344",
+     "CPSC 404",
+     "CPSC 410",
+     "CPSC 416"
+    ],
+    "start_term": {
+     "year": 2029,
+     "season": "W1"
+    },
+    "num_terms": 1,
+    "max_credits_per_term": 15
+   },
+   {
+    "id": "U6",
+    "name": "4th-year (Systems) — starts in W2, two terms left",
+    "track": "SYSTEMS",
+    "completed": [
+     "CPSC 110",
+     "CPSC 121",
+     "CPSC 210",
+     "CPSC 213",
+     "CPSC 221",
+     "CPSC 310",
+     "CPSC 313",
+     "CPSC 320",
+     "MATH 100",
+     "MATH 101",
+     "MATH 200",
+     "MATH 221",
+     "STAT 251",
+     "CPSC 317",
+     "CPSC 304",
+     "CPSC 322",
+     "CPSC 404"
+    ],
+    "start_term": {
+     "year": 2029,
+     "season": "W2"
+    },
+    "num_terms": 2,
+    "max_credits_per_term": 15
+   }
+  ]
+ },
+ "stops": [
+  {
+   "id": "plan",
+   "requests": [
+    {
+     "t": 0.0,
+     "ms": 22.9,
+     "method": "GET",
+     "path": "/api/students/U2/plan",
+     "status": 200,
+     "headers": {
+      "X-Candidates": "1",
+      "X-Used-Fallback": "true",
+      "X-Min-Terms-Proven": "false"
+     },
+     "body": {
+      "student_id": "U2",
+      "feasible": true,
+      "terms": [
+       {
+        "year": 2027,
+        "season": "W1",
+        "courses": [
+         "CPSC 210",
+         "MATH 111",
+         "MATH 200",
+         "STAT 251"
+        ],
+        "credits": 13
+       },
+       {
+        "year": 2027,
+        "season": "W2",
+        "courses": [
+         "CPSC 213",
+         "CPSC 221",
+         "CPSC 330",
+         "CPSC 344"
+        ],
+        "credits": 14
+       },
+       {
+        "year": 2028,
+        "season": "W1",
+        "courses": [
+         "CPSC 310",
+         "CPSC 313",
+         "CPSC 304",
+         "CPSC 317"
+        ],
+        "credits": 13
+       },
+       {
+        "year": 2028,
+        "season": "W2",
+        "courses": [
+         "CPSC 320",
+         "CPSC 322",
+         "CPSC 404",
+         "CPSC 416",
+         "CPSC 417"
+        ],
+        "credits": 15
+       },
+       {
+        "year": 2029,
+        "season": "W1",
+        "courses": [
+         "CPSC 423",
+         "CPSC 425"
+        ],
+        "credits": 6
+       }
+      ],
+      "chosen": {
+       "LINEAR_ALGEBRA": [
+        "MATH 111"
+       ],
+       "UPPER_ELECTIVE": [
+        "CPSC 304",
+        "CPSC 317",
+        "CPSC 322",
+        "CPSC 330",
+        "CPSC 344",
+        "CPSC 404",
+        "CPSC 416",
+        "CPSC 417",
+        "CPSC 423",
+        "CPSC 425"
+       ],
+       "UPPER_400": [
+        "CPSC 404",
+        "CPSC 416",
+        "CPSC 417",
+        "CPSC 423",
+        "CPSC 425"
+       ],
+       "SYS_ELECTIVE": [
+        "CPSC 416",
+        "CPSC 417"
+       ]
+      },
+      "errors": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "not_offered",
+   "requests": [
+    {
+     "t": 0.023,
+     "ms": 49.1,
+     "method": "GET",
+     "path": "/api/students/U5/plan",
+     "status": 200,
+     "headers": {
+      "X-Candidates": "1",
+      "X-Used-Fallback": "false"
+     },
+     "body": {
+      "student_id": "U5",
+      "feasible": false,
+      "terms": [],
+      "chosen": {},
+      "errors": [
+       {
+        "code": "E_NOT_OFFERED",
+        "message": "MATH 101: W2 only, but the remaining terms (2029 W1) include none of them",
+        "courses": [
+         "MATH 101"
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "over_cap",
+   "requests": [
+    {
+     "t": 0.072,
+     "ms": 21.5,
+     "method": "GET",
+     "path": "/api/students/U4/plan",
+     "status": 200,
+     "headers": {
+      "X-Candidates": "1",
+      "X-Used-Fallback": "true"
+     },
+     "body": {
+      "student_id": "U4",
+      "feasible": false,
+      "terms": [],
+      "chosen": {},
+      "errors": [
+       {
+        "code": "E_INFEASIBLE",
+        "message": "Not enough room: courses that must be placed within 2028 W1 ~ 2029 W2 (4 terms): CPSC 310(4) + CPSC 313(3) + CPSC 320(3) + CPSC 304(3) + CPSC 317(3) + CPSC 322(3) + CPSC 330(3) + CPSC 340(3) + CPSC 344(3) + CPSC 425(3) + CPSC 404(3) + CPSC 410(3) = 37 credits > 4 terms × cap 6 = 24. This combination needs a per-term cap of at least 10",
+        "courses": [
+         "CPSC 310",
+         "CPSC 313",
+         "CPSC 320",
+         "CPSC 304",
+         "CPSC 317",
+         "CPSC 322",
+         "CPSC 330",
+         "CPSC 340",
+         "CPSC 344",
+         "CPSC 425",
+         "CPSC 404",
+         "CPSC 410"
+        ]
+       },
+       {
+        "code": "E_INFEASIBLE",
+        "message": "Note: there are more than 256 PICK_N/OR combinations, so only the cheapest one was tried — another combination might work, so infeasibility is not proven",
+        "courses": []
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "raised_cap",
+   "requests": [
+    {
+     "t": 0.094,
+     "ms": 20.5,
+     "method": "GET",
+     "path": "/api/students/U4/plan?max_credits=10",
+     "status": 200,
+     "headers": {
+      "X-Candidates": "1",
+      "X-Used-Fallback": "true",
+      "X-Min-Terms-Proven": "false"
+     },
+     "body": {
+      "student_id": "U4",
+      "feasible": true,
+      "terms": [
+       {
+        "year": 2028,
+        "season": "W1",
+        "courses": [
+         "CPSC 310",
+         "CPSC 313",
+         "CPSC 304"
+        ],
+        "credits": 10
+       },
+       {
+        "year": 2028,
+        "season": "W2",
+        "courses": [
+         "CPSC 320",
+         "CPSC 317",
+         "CPSC 410"
+        ],
+        "credits": 9
+       },
+       {
+        "year": 2029,
+        "season": "W1",
+        "courses": [
+         "CPSC 322",
+         "CPSC 330",
+         "CPSC 340"
+        ],
+        "credits": 9
+       },
+       {
+        "year": 2029,
+        "season": "W2",
+        "courses": [
+         "CPSC 344",
+         "CPSC 404",
+         "CPSC 425"
+        ],
+        "credits": 9
+       }
+      ],
+      "chosen": {
+       "LINEAR_ALGEBRA": [
+        "MATH 221"
+       ],
+       "UPPER_ELECTIVE": [
+        "CPSC 304",
+        "CPSC 317",
+        "CPSC 322",
+        "CPSC 330",
+        "CPSC 340",
+        "CPSC 344",
+        "CPSC 404",
+        "CPSC 410",
+        "CPSC 425"
+       ],
+       "UPPER_400": [
+        "CPSC 404",
+        "CPSC 410",
+        "CPSC 425"
+       ],
+       "SW_ELECTIVE": [
+        "CPSC 344",
+        "CPSC 404",
+        "CPSC 410"
+       ]
+      },
+      "errors": []
+     }
+    }
+   ]
+  },
+  {
+   "id": "job",
+   "requests": [
+    {
+     "t": 0.114,
+     "ms": 93.0,
+     "method": "POST",
+     "path": "/api/students/U1/plan-jobs",
+     "status": 202,
+     "headers": {
+      "Location": "/api/plan-jobs/2e531521-0312-4548-92f2-6a6f2b6a9d8c"
+     },
+     "body": {
+      "job_id": "2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+      "status": "PENDING"
+     }
+    },
+    {
+     "t": 0.207,
+     "ms": 30.5,
+     "method": "GET",
+     "path": "/api/plan-jobs/2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+     "status": 200,
+     "headers": {},
+     "body": {
+      "job_id": "2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+      "status": "PENDING",
+      "student_id": "U1",
+      "params": {
+       "max_credits": null,
+       "num_terms": null
+      },
+      "created_at": "2026-10-13T21:25:24.689848Z",
+      "finished_at": null,
+      "plan": null,
+      "engine": null,
+      "error": null,
+      "export": null
+     }
+    },
+    {
+     "t": 0.289,
+     "ms": 28.2,
+     "method": "GET",
+     "path": "/api/plan-jobs/2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+     "status": 200,
+     "headers": {},
+     "body": {
+      "job_id": "2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+      "status": "RUNNING",
+      "student_id": "U1",
+      "params": {
+       "max_credits": null,
+       "num_terms": null
+      },
+      "created_at": "2026-10-13T21:25:24.689848Z",
+      "finished_at": null,
+      "plan": null,
+      "engine": null,
+      "error": null,
+      "export": null
+     }
+    },
+    {
+     "t": 0.371,
+     "ms": 32.9,
+     "method": "GET",
+     "path": "/api/plan-jobs/2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+     "status": 200,
+     "headers": {},
+     "body": {
+      "job_id": "2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+      "status": "RUNNING",
+      "student_id": "U1",
+      "params": {
+       "max_credits": null,
+       "num_terms": null
+      },
+      "created_at": "2026-10-13T21:25:24.689848Z",
+      "finished_at": null,
+      "plan": null,
+      "engine": null,
+      "error": null,
+      "export": null
+     }
+    },
+    {
+     "t": 0.459,
+     "ms": 32.2,
+     "method": "GET",
+     "path": "/api/plan-jobs/2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+     "status": 200,
+     "headers": {},
+     "body": {
+      "job_id": "2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+      "status": "RUNNING",
+      "student_id": "U1",
+      "params": {
+       "max_credits": null,
+       "num_terms": null
+      },
+      "created_at": "2026-10-13T21:25:24.689848Z",
+      "finished_at": null,
+      "plan": null,
+      "engine": null,
+      "error": null,
+      "export": null
+     }
+    },
+    {
+     "t": 0.546,
+     "ms": 33.9,
+     "method": "GET",
+     "path": "/api/plan-jobs/2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+     "status": 200,
+     "headers": {},
+     "body": {
+      "job_id": "2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+      "status": "RUNNING",
+      "student_id": "U1",
+      "params": {
+       "max_credits": null,
+       "num_terms": null
+      },
+      "created_at": "2026-10-13T21:25:24.689848Z",
+      "finished_at": null,
+      "plan": null,
+      "engine": null,
+      "error": null,
+      "export": null
+     }
+    },
+    {
+     "t": 0.633,
+     "ms": 37.2,
+     "method": "GET",
+     "path": "/api/plan-jobs/2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+     "status": 200,
+     "headers": {},
+     "body": {
+      "job_id": "2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+      "status": "SUCCESS",
+      "student_id": "U1",
+      "params": {
+       "max_credits": null,
+       "num_terms": null
+      },
+      "created_at": "2026-10-13T21:25:24.689848Z",
+      "finished_at": "2026-10-13T21:25:25.182942Z",
+      "plan": {
+       "student_id": "U1",
+       "feasible": true,
+       "terms": [
+        {
+         "year": 2026,
+         "season": "W1",
+         "courses": [
+          "CPSC 110",
+          "CPSC 121",
+          "MATH 100"
+         ],
+         "credits": 11
+        },
+        {
+         "year": 2026,
+         "season": "W2",
+         "courses": [
+          "CPSC 210",
+          "MATH 101",
+          "MATH 221"
+         ],
+         "credits": 10
+        },
+        {
+         "year": 2027,
+         "season": "W1",
+         "courses": [
+          "CPSC 213",
+          "CPSC 221",
+          "MATH 200",
+          "STAT 251"
+         ],
+         "credits": 14
+        },
+        {
+         "year": 2027,
+         "season": "W2",
+         "courses": [
+          "CPSC 310",
+          "CPSC 313",
+          "CPSC 304",
+          "CPSC 330"
+         ],
+         "credits": 13
+        },
+        {
+         "year": 2028,
+         "season": "W1",
+         "courses": [
+          "CPSC 320",
+          "CPSC 317",
+          "CPSC 322",
+          "CPSC 340",
+          "CPSC 344"
+         ],
+         "credits": 15
+        },
+        {
+         "year": 2028,
+         "season": "W2",
+         "courses": [
+          "CPSC 404",
+          "CPSC 423",
+          "CPSC 425"
+         ],
+         "credits": 9
+        }
+       ],
+       "chosen": {
+        "LINEAR_ALGEBRA": [
+         "MATH 221"
+        ],
+        "UPPER_ELECTIVE": [
+         "CPSC 304",
+         "CPSC 317",
+         "CPSC 322",
+         "CPSC 330",
+         "CPSC 340",
+         "CPSC 344",
+         "CPSC 404",
+         "CPSC 423",
+         "CPSC 425"
+        ],
+        "UPPER_400": [
+         "CPSC 404",
+         "CPSC 423",
+         "CPSC 425"
+        ],
+        "AI_ELECTIVE": [
+         "CPSC 322",
+         "CPSC 423",
+         "CPSC 425"
+        ]
+       },
+       "errors": []
+      },
+      "engine": {
+       "candidates": 1,
+       "used_fallback": true,
+       "min_terms_proven": false
+      },
+      "error": null,
+      "export": {
+       "status": "PENDING",
+       "bucket": "coursemap-demo",
+       "key": null,
+       "url": null,
+       "exported_at": null,
+       "error": null
+      }
+     }
+    },
+    {
+     "t": 0.722,
+     "ms": 111.2,
+     "method": "GET",
+     "path": "/api/plan-jobs/2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+     "status": 200,
+     "headers": {},
+     "body": {
+      "job_id": "2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+      "status": "SUCCESS",
+      "student_id": "U1",
+      "params": {
+       "max_credits": null,
+       "num_terms": null
+      },
+      "created_at": "2026-10-13T21:25:24.689848Z",
+      "finished_at": "2026-10-13T21:25:25.182942Z",
+      "plan": {
+       "student_id": "U1",
+       "feasible": true,
+       "terms": [
+        {
+         "year": 2026,
+         "season": "W1",
+         "courses": [
+          "CPSC 110",
+          "CPSC 121",
+          "MATH 100"
+         ],
+         "credits": 11
+        },
+        {
+         "year": 2026,
+         "season": "W2",
+         "courses": [
+          "CPSC 210",
+          "MATH 101",
+          "MATH 221"
+         ],
+         "credits": 10
+        },
+        {
+         "year": 2027,
+         "season": "W1",
+         "courses": [
+          "CPSC 213",
+          "CPSC 221",
+          "MATH 200",
+          "STAT 251"
+         ],
+         "credits": 14
+        },
+        {
+         "year": 2027,
+         "season": "W2",
+         "courses": [
+          "CPSC 310",
+          "CPSC 313",
+          "CPSC 304",
+          "CPSC 330"
+         ],
+         "credits": 13
+        },
+        {
+         "year": 2028,
+         "season": "W1",
+         "courses": [
+          "CPSC 320",
+          "CPSC 317",
+          "CPSC 322",
+          "CPSC 340",
+          "CPSC 344"
+         ],
+         "credits": 15
+        },
+        {
+         "year": 2028,
+         "season": "W2",
+         "courses": [
+          "CPSC 404",
+          "CPSC 423",
+          "CPSC 425"
+         ],
+         "credits": 9
+        }
+       ],
+       "chosen": {
+        "LINEAR_ALGEBRA": [
+         "MATH 221"
+        ],
+        "UPPER_ELECTIVE": [
+         "CPSC 304",
+         "CPSC 317",
+         "CPSC 322",
+         "CPSC 330",
+         "CPSC 340",
+         "CPSC 344",
+         "CPSC 404",
+         "CPSC 423",
+         "CPSC 425"
+        ],
+        "UPPER_400": [
+         "CPSC 404",
+         "CPSC 423",
+         "CPSC 425"
+        ],
+        "AI_ELECTIVE": [
+         "CPSC 322",
+         "CPSC 423",
+         "CPSC 425"
+        ]
+       },
+       "errors": []
+      },
+      "engine": {
+       "candidates": 1,
+       "used_fallback": true,
+       "min_terms_proven": false
+      },
+      "error": null,
+      "export": {
+       "status": "SUCCESS",
+       "bucket": "coursemap-demo",
+       "key": "plans/U1/2e531521-0312-4548-92f2-6a6f2b6a9d8c.json",
+       "url": null,
+       "exported_at": "2026-10-13T21:25:25.191784Z",
+       "error": null
+      }
+     }
+    }
+   ],
+   "export_check": {
+    "downloaded": true,
+    "keys": [
+     "job_id",
+     "student_id",
+     "params",
+     "plan",
+     "engine",
+     "input",
+     "exported_at"
+    ],
+    "plan_matches_job": true
+   }
+  },
+  {
+   "id": "job_again",
+   "requests": [
+    {
+     "t": 0.837,
+     "ms": 21.8,
+     "method": "POST",
+     "path": "/api/students/U1/plan-jobs",
+     "status": 200,
+     "headers": {
+      "Location": "/api/plan-jobs/2e531521-0312-4548-92f2-6a6f2b6a9d8c"
+     },
+     "body": {
+      "job_id": "2e531521-0312-4548-92f2-6a6f2b6a9d8c",
+      "status": "SUCCESS"
+     }
+    }
+   ]
+  }
+ ],
+ "parity": {
+  "command": "python3 parity/run.py",
+  "exit_code": 0,
+  "started_t": 3.6,
+  "python": "Python 3.15.0",
+  "lines": [
+   {
+    "t": 10.185,
+    "text": "engine test recording: {\"tests_run\": 184, \"calls\": 12152, \"unique\": 11985, \"kinds\": {\"validate\": 7599, \"plan\": 2785, \"verify\": 1576, \"load\": 25}, \"skipped\": {\"precheck_mocked\": 3, \"custom_static\": 0}}"
+   },
+   {
+    "t": 16.209,
+    "text": "unit_tests  cases= 11985 mismatches=0 plans= 2785 feasible= 1479  python=   3.42s go=  1.18s (x2.9)  {\"validate\": 7599, \"plan\": 2785, \"verify\": 1576, \"load\": 25}"
+   },
+   {
+    "t": 17.095,
+    "text": "grid        cases=   448 mismatches=0 plans=  448 feasible=  246  python=   0.66s go=  0.19s (x3.4)  {\"plan\": 448}"
+   },
+   {
+    "t": 18.168,
+    "text": "fuzz_small  cases=  5000 mismatches=0 plans= 5000 feasible= 2710  python=   0.71s go=  0.28s (x2.6)  {\"plan\": 5000}"
+   },
+   {
+    "t": 18.78,
+    "text": "fuzz_limits cases=  3000 mismatches=0 plans= 3000 feasible= 1625  python=   0.40s go=  0.16s (x2.6)  {\"plan\": 3000}"
+   },
+   {
+    "t": 25.286,
+    "text": "fuzz_large  cases=  1000 mismatches=0 plans= 1000 feasible=  472  python=   4.58s go=  1.88s (x2.4)  {\"plan\": 1000}"
+   },
+   {
+    "t": 25.593,
+    "text": "fuzz_messy  cases=  2250 mismatches=0 plans= 1500 feasible=  215  python=   0.16s go=  0.10s (x1.6)  {\"validate\": 750, \"plan\": 1500}"
+   },
+   {
+    "t": 25.67,
+    "text": "fuzz_load   cases=  1000 mismatches=0 plans=    0 feasible=    0  python=   0.02s go=  0.03s (x0.7)  {\"load\": 1000}"
+   },
+   {
+    "t": 25.813,
+    "text": "fuzz_verify cases=  1500 mismatches=0 plans=    0 feasible=    0  python=   0.05s go=  0.06s (x0.8)  {\"verify\": 1500}"
+   },
+   {
+    "t": 27.452,
+    "text": "limit_sweep cases=  6200 mismatches=0 plans= 6200 feasible= 3283  python=   1.16s go=  0.37s (x3.1)  {\"plan\": 6200}"
+   },
+   {
+    "t": 27.698,
+    "text": "strings     cases=  1288 mismatches=0 plans= 1000 feasible=  400  python=   0.14s go=  0.07s (x2.1)  {\"plan\": 1000, \"validate\": 288}"
+   },
+   {
+    "t": 27.962,
+    "text": "cycles      cases=  2000 mismatches=0 plans= 1000 feasible=   55  python=   0.13s go=  0.10s (x1.3)  {\"validate\": 1000, \"plan\": 1000}"
+   },
+   {
+    "t": 31.68,
+    "text": "or_sweep    cases=  1080 mismatches=0 plans= 1080 feasible= 1080  python=   2.32s go=  1.37s (x1.7)  {\"plan\": 1080}"
+   },
+   {
+    "t": 43.467,
+    "text": "heavy       cases=    20 mismatches=0 plans=   20 feasible=    7  python=   9.64s go=  2.13s (x4.5)  {\"plan\": 20}"
+   },
+   {
+    "t": 46.273,
+    "text": "ubc_grid    cases=   768 mismatches=0 plans=  768 feasible=  373  python=   2.23s go=  0.51s (x4.4)  {\"plan\": 768}"
+   },
+   {
+    "t": 48.634,
+    "text": "ubc_limits  cases=   160 mismatches=0 plans=  160 feasible=   57  python=   1.78s go=  0.56s (x3.2)  {\"plan\": 160}"
+   },
+   {
+    "t": 56.571,
+    "text": "cli         invocations=138 mismatches=0 (stdout, stderr, exit code)"
+   },
+   {
+    "t": 56.571,
+    "text": "total       cases=37699 mismatches=0"
+   }
+  ]
+ }
+}

@@ -1,9 +1,8 @@
 # Build the browser demo (Go engine -> WebAssembly) and publish it to GitHub Pages.
 name: Demo
 
+# Manual only: the demo will be hosted on its own domain, so pushes do not publish to Pages.
 on:
-  push:
-    branches: [master]
   workflow_dispatch:
 
 permissions:

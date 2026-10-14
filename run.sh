@@ -53,7 +53,7 @@ demo() {
     fail "port $PORT is in use (pick another, e.g. PORT=8001 ./run.sh)"
   fi
   step "Start the Celery worker + API server (logs: $LOG_DIR)"
-  .venv/bin/celery -A config worker -l warning -c 1 >"$LOG_DIR/worker.log" 2>&1 &
+  "$PY" -m celery -A config worker -l warning -c 1 >"$LOG_DIR/worker.log" 2>&1 &
   PIDS+=($!)
   "$PY" manage.py runserver "$PORT" --noreload >"$LOG_DIR/server.log" 2>&1 &
   PIDS+=($!)
@@ -117,7 +117,7 @@ web() {
     fail "port $PORT is in use (pick another, e.g. PORT=8001 ./run.sh web)"
   fi
   step "Start the Celery worker (logs: $LOG_DIR/worker.log)"
-  .venv/bin/celery -A config worker -l warning -c 1 >"$LOG_DIR/worker.log" 2>&1 &
+  "$PY" -m celery -A config worker -l warning -c 1 >"$LOG_DIR/worker.log" 2>&1 &
   PIDS+=($!)
   step "Web UI: http://127.0.0.1:$PORT/  (stop: Ctrl+C)"
   ( for _ in $(seq 1 30); do
